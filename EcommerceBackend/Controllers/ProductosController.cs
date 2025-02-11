@@ -1,60 +1,58 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 [Route("api/[controller]")]
 [ApiController]
 public class ProductosController : ControllerBase
 {
-    private static List<Producto> _productos = new List<Producto>
+    private readonly IProductoService _productoService;
+
+    public ProductosController(IProductoService productoService)
     {
-        new Producto { Id = 1, Nombre = "Lámpara Moderna", Descripcion = "Lámpara de diseño", Precio = 45.99m, Stock = 10 },
-        new Producto { Id = 2, Nombre = "Cojín Decorativo", Descripcion = "Cojín de tela suave", Precio = 19.99m, Stock = 20 }
-    };
+        _productoService = productoService;
+    }
 
     [HttpGet]
-    public IActionResult GetProductos()
+    public async Task<IActionResult> GetProductos()
     {
-        return Ok(_productos);
+        var productos = await _productoService.GetAll();
+        return Ok(productos);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetProducto(int id)
+    public async Task<IActionResult> GetProducto(int id)
     {
-        var producto = _productos.Find(p => p.Id == id);
+        var producto = await _productoService.GetById(id);
         if (producto == null) return NotFound();
         return Ok(producto);
     }
 
     [HttpPost]
-    public IActionResult CreateProducto([FromBody] Producto producto)
+    public async Task<IActionResult> CreateProducto([FromBody] Producto producto)
     {
-        if (producto == null) return BadRequest();
-        producto.Id = _productos.Count + 1;
-        _productos.Add(producto);
+        await _productoService.Add(producto);
         return CreatedAtAction(nameof(GetProducto), new { id = producto.Id }, producto);
     }
 
     [HttpPut("{id}")]
-    public IActionResult UpdateProducto(int id, [FromBody] Producto productoActualizado)
+    public async Task<IActionResult> UpdateProducto(int id, [FromBody] Producto producto)
     {
-        var producto = _productos.Find(p => p.Id == id);
-        if (producto == null) return NotFound();
-        
-        producto.Nombre = productoActualizado.Nombre;
-        producto.Descripcion = productoActualizado.Descripcion;
-        producto.Precio = productoActualizado.Precio;
-        producto.Stock = productoActualizado.Stock;
+        var existingProducto = await _productoService.GetById(id);
+        if (existingProducto == null) return NotFound();
 
+        producto.Id = id;
+        await _productoService.Update(producto);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public IActionResult DeleteProducto(int id)
+    public async Task<IActionResult> DeleteProducto(int id)
     {
-        var producto = _productos.Find(p => p.Id == id);
-        if (producto == null) return NotFound();
-        
-        _productos.Remove(producto);
+        var existingProducto = await _productoService.GetById(id);
+        if (existingProducto == null) return NotFound();
+
+        await _productoService.Delete(id);
         return NoContent();
     }
 }
