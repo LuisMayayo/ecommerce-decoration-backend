@@ -1,59 +1,83 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 
-[Route("api/[controller]")]
-[ApiController]
-public class UsuariosController : ControllerBase
+namespace EcommerceBackend.Controllers
 {
-    private static List<Usuario> _usuarios = new List<Usuario>
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UsuarioController : ControllerBase
     {
-        new Usuario { Id = 1, Nombre = "Marcos Larraga", Email = "marcosl@example.com", PasswordHash = "12345ml" },
-        new Usuario { Id = 2, Nombre = "Luis Mayayo", Email = "luism@example.com", PasswordHash = "12345ml" }
-    };
+        private readonly IUsuarioService _usuarioService;
 
-    [HttpGet]
-    public IActionResult GetUsuarios()
-    {
-        return Ok(_usuarios);
+        public UsuarioController(IUsuarioService usuarioService)
+        {
+            _usuarioService = usuarioService;
+        }
+
+        // Crear un nuevo usuario
+        [HttpPost("register")]
+        public async Task<ActionResult<Usuario>> Register([FromBody] Usuario usuario)
+        {
+            // Verificar si el usuario ya existe
+            var existingUser = await _usuarioService.GetByEmailAsync(usuario.Email);
+            if (existingUser != null)
+            {
+                return Conflict("El usuario ya existe con ese correo.");
+            }
+
+            // Crear el PasswordHash y PasswordSalt
+            using (var hmac = new HMACSHA512())
+            {
+                usuario.PasswordSalt = Convert.ToBase64String(hmac.Key);  // Guardar la sal
+                usuario.PasswordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(usuario.PasswordHash))); // Guardar el hash
+            }
+
+            // Registrar el usuario
+            await _usuarioService.AddAsync(usuario);
+
+            return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, usuario);
+        }
+
+        // Obtener un usuario por ID
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Usuario>> GetById(int id)
+        {
+            var usuario = await _usuarioService.GetByIdAsync(id);
+            if (usuario == null)
+            {
+                return NotFound("Usuario no encontrado.");
+            }
+            return Ok(usuario);
+        }
+
+        // Login del usuario (autenticación)
+        [HttpPost("login")]
+        public async Task<ActionResult<Usuario>> Login([FromBody] LoginRequest request)
+        {
+            var usuario = await _usuarioService.GetByEmailAsync(request.Email);
+            if (usuario == null)
+            {
+                return Unauthorized("Usuario o contraseña incorrectos.");
+            }
+
+            using (var hmac = new HMACSHA512(Convert.FromBase64String(usuario.PasswordSalt)))
+            {
+                var computedHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)));
+                if (computedHash != usuario.PasswordHash)
+                {
+                    return Unauthorized("Usuario o contraseña incorrectos.");
+                }
+            }
+
+            return Ok(usuario);
+        }
     }
 
-    [HttpGet("{id}")]
-    public IActionResult GetUsuario(int id)
+    // Clase para la solicitud de login
+    public class LoginRequest
     {
-        var usuario = _usuarios.Find(u => u.Id == id);
-        if (usuario == null) return NotFound();
-        return Ok(usuario);
-    }
-
-    [HttpPost]
-    public IActionResult CreateUsuario([FromBody] Usuario usuario)
-    {
-        if (usuario == null) return BadRequest();
-        usuario.Id = _usuarios.Count + 1;
-        _usuarios.Add(usuario);
-        return CreatedAtAction(nameof(GetUsuario), new { id = usuario.Id }, usuario);
-    }
-
-    [HttpPut("{id}")]
-    public IActionResult UpdateUsuario(int id, [FromBody] Usuario usuarioActualizado)
-    {
-        var usuario = _usuarios.Find(u => u.Id == id);
-        if (usuario == null) return NotFound();
-        
-        usuario.Nombre = usuarioActualizado.Nombre;
-        usuario.Email = usuarioActualizado.Email;
-        usuario.PasswordHash = usuarioActualizado.PasswordHash;
-
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public IActionResult DeleteUsuario(int id)
-    {
-        var usuario = _usuarios.Find(u => u.Id == id);
-        if (usuario == null) return NotFound();
-        
-        _usuarios.Remove(usuario);
-        return NoContent();
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }

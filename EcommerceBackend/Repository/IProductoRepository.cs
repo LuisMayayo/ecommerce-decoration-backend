@@ -1,11 +1,8 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 public interface IProductoRepository
 {
-    Task<IEnumerable<Producto>> GetAll();
-    Task<Producto> GetById(int id);
-    Task Add(Producto producto);
-    Task Update(Producto producto);
-    Task Delete(int id);
+    Task<List<Producto>> GetAllAsync();
+    Task<Producto?> GetByIdAsync(int id);
+    Task AddAsync(Producto producto);
+    Task UpdateAsync(Producto producto);
+    Task<bool> DeleteAsync(int id);
 }

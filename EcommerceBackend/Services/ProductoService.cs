@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 public class ProductoService : IProductoService
 {
     private readonly IProductoRepository _productoRepository;
@@ -10,28 +7,28 @@ public class ProductoService : IProductoService
         _productoRepository = productoRepository;
     }
 
-    public async Task<IEnumerable<Producto>> GetAll()
+    public async Task<List<Producto>> GetAllAsync()
     {
-        return await _productoRepository.GetAll();
+        return await _productoRepository.GetAllAsync();
     }
 
-    public async Task<Producto> GetById(int id)
+    public async Task<Producto?> GetByIdAsync(int id)
     {
-        return await _productoRepository.GetById(id);
+        return await _productoRepository.GetByIdAsync(id);
     }
 
-    public async Task Add(Producto producto)
+    public async Task AddAsync(Producto producto)
     {
-        await _productoRepository.Add(producto);
+        await _productoRepository.AddAsync(producto);
     }
 
-    public async Task Update(Producto producto)
+    public async Task UpdateAsync(Producto producto)
     {
-        await _productoRepository.Update(producto);
+        await _productoRepository.UpdateAsync(producto);
     }
 
-    public async Task Delete(int id)
+    public async Task DeleteAsync(int id)
     {
-        await _productoRepository.Delete(id);
+        await _productoRepository.DeleteAsync(id);
     }
 }

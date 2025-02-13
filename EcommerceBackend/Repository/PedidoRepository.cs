@@ -1,51 +1,90 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 public class PedidoRepository : IPedidoRepository
 {
-    private readonly List<Pedido> _pedidos = new List<Pedido>
-    {
-        new Pedido { Id = 1, UsuarioId = 1, Total = 99.99m, FechaPedido = DateTime.Now },
-        new Pedido { Id = 2, UsuarioId = 2, Total = 59.50m, FechaPedido = DateTime.Now }
-    };
+    private readonly string _connectionString;
 
-    public async Task<IEnumerable<Pedido>> GetAll()
+    public PedidoRepository(string connectionString)
     {
-        return await Task.FromResult(_pedidos);
+        _connectionString = connectionString;
     }
 
-    public async Task<Pedido> GetById(int id)
+    public async Task<Pedido> AddAsync(Pedido pedido)
     {
-        var pedido = _pedidos.FirstOrDefault(p => p.Id == id);
-        return await Task.FromResult(pedido);
-    }
-
-    public async Task Add(Pedido pedido)
-    {
-        pedido.Id = _pedidos.Count + 1;
-        pedido.FechaPedido = DateTime.Now;
-        _pedidos.Add(pedido);
-        await Task.CompletedTask;
-    }
-
-    public async Task Update(Pedido pedido)
-    {
-        var index = _pedidos.FindIndex(p => p.Id == pedido.Id);
-        if (index != -1)
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _pedidos[index] = pedido;
+            await connection.OpenAsync();
+            string query = "INSERT INTO Pedido (UsuarioId, FechaPedido, Total) VALUES (@UsuarioId, @FechaPedido, @Total); SELECT SCOPE_IDENTITY();";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@UsuarioId", pedido.UsuarioId);
+                command.Parameters.AddWithValue("@FechaPedido", pedido.FechaPedido);
+                command.Parameters.AddWithValue("@Total", pedido.Total);
+
+                pedido.Id = Convert.ToInt32(await command.ExecuteScalarAsync());
+            }
         }
-        await Task.CompletedTask;
+
+        return pedido;
     }
 
-    public async Task Delete(int id)
+    public async Task<Pedido> GetByIdAsync(int id)
     {
-        var pedido = _pedidos.FirstOrDefault(p => p.Id == id);
-        if (pedido != null)
+        Pedido? pedido = null;
+
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _pedidos.Remove(pedido);
+            await connection.OpenAsync();
+            string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE Id = @Id";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        pedido = new Pedido
+                        {
+                            Id = reader.GetInt32(0),
+                            UsuarioId = reader.GetInt32(1),
+                            FechaPedido = reader.GetDateTime(2),
+                            Total = reader.GetDecimal(3),
+                        };
+                    }
+                }
+            }
         }
-        await Task.CompletedTask;
+
+        return pedido;
+    }
+
+    public async Task<List<Pedido>> GetByUserIdAsync(int userId)
+    {
+        var pedidos = new List<Pedido>();
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE UsuarioId = @UsuarioId";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@UsuarioId", userId);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        pedidos.Add(new Pedido
+                        {
+                            Id = reader.GetInt32(0),
+                            UsuarioId = reader.GetInt32(1),
+                            FechaPedido = reader.GetDateTime(2),
+                            Total = reader.GetDecimal(3),
+                        });
+                    }
+                }
+            }
+        }
+
+        return pedidos;
     }
 }

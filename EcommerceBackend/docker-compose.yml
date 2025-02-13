@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  # Servicio para el backend de la aplicación
+  ecommerce-backend:
+    build: .
+    ports:
+      - "8080:80"  # El contenedor se expondrá en el puerto 8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=EcommerceDB;User Id=sa;Password=YourStrongPassword123!
+    depends_on:
+      - mssql
+    networks:
+      - ecommerce-net
+
+  # Servicio para la base de datos (SQL Server)
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrongPassword123!  # Cambia esto por una contraseña segura
+    ports:
+      - "1433:1433"  # Puerto del contenedor de SQL Server
+    networks:
+      - ecommerce-net
+    volumes:
+      - mssql-data:/var/opt/mssql  # Persistencia de los datos
+
+networks:
+  ecommerce-net:
+    driver: bridge
+
+volumes:
+  mssql-data:
+    driver: local

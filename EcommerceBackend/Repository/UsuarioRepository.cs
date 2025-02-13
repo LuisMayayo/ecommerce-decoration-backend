@@ -1,50 +1,94 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 public class UsuarioRepository : IUsuarioRepository
 {
-    private readonly List<Usuario> _usuarios = new List<Usuario>
-    {
-        new Usuario { Id = 1, Nombre = "Juan Pérez", Email = "juan@example.com", PasswordHash = "123456" },
-        new Usuario { Id = 2, Nombre = "Ana López", Email = "ana@example.com", PasswordHash = "abcdef" }
-    };
+    private readonly string _connectionString;
 
-    public async Task<IEnumerable<Usuario>> GetAll()
+    public UsuarioRepository(string connectionString)
     {
-        return await Task.FromResult(_usuarios);
+        _connectionString = connectionString;
     }
 
-    public async Task<Usuario> GetById(int id)
+    public async Task<Usuario> AddAsync(Usuario usuario)
     {
-        var usuario = _usuarios.FirstOrDefault(u => u.Id == id);
-        return await Task.FromResult(usuario);
-    }
-
-    public async Task Add(Usuario usuario)
-    {
-        usuario.Id = _usuarios.Count + 1;
-        _usuarios.Add(usuario);
-        await Task.CompletedTask;
-    }
-
-    public async Task Update(Usuario usuario)
-    {
-        var index = _usuarios.FindIndex(u => u.Id == usuario.Id);
-        if (index != -1)
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _usuarios[index] = usuario;
+            await connection.OpenAsync();
+            string query = "INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro) VALUES (@Nombre, @Email, @PasswordHash, @PasswordSalt, @FechaRegistro)";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Nombre", usuario.Nombre);
+                command.Parameters.AddWithValue("@Email", usuario.Email);
+                command.Parameters.AddWithValue("@PasswordHash", usuario.PasswordHash);
+                command.Parameters.AddWithValue("@PasswordSalt", usuario.PasswordSalt);
+                command.Parameters.AddWithValue("@FechaRegistro", usuario.FechaRegistro);
+                await command.ExecuteNonQueryAsync();
+            }
         }
-        await Task.CompletedTask;
+        return usuario;
     }
 
-    public async Task Delete(int id)
+    public async Task<Usuario> GetByIdAsync(int id)
     {
-        var usuario = _usuarios.FirstOrDefault(u => u.Id == id);
-        if (usuario != null)
+        Usuario? usuario = null;
+
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _usuarios.Remove(usuario);
+            await connection.OpenAsync();
+            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro FROM Usuario WHERE Id = @Id";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        usuario = new Usuario
+                        {
+                            Id = reader.GetInt32(0),
+                            Nombre = reader.GetString(1),
+                            Email = reader.GetString(2),
+                            PasswordHash = reader.GetString(3),
+                            PasswordSalt = reader.GetString(4),
+                            FechaRegistro = reader.GetDateTime(5)
+                        };
+                    }
+                }
+            }
         }
-        await Task.CompletedTask;
+
+        return usuario;
+    }
+
+    public async Task<Usuario> GetByEmailAsync(string email)
+    {
+        Usuario? usuario = null;
+
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro FROM Usuario WHERE Email = @Email";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Email", email);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        usuario = new Usuario
+                        {
+                            Id = reader.GetInt32(0),
+                            Nombre = reader.GetString(1),
+                            Email = reader.GetString(2),
+                            PasswordHash = reader.GetString(3),
+                            PasswordSalt = reader.GetString(4),
+                            FechaRegistro = reader.GetDateTime(5)
+                        };
+                    }
+                }
+            }
+        }
+
+        return usuario;
     }
 }

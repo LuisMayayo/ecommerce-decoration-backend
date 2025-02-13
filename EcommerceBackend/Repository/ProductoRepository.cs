@@ -1,50 +1,127 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 
 public class ProductoRepository : IProductoRepository
 {
-    private readonly List<Producto> _productos = new List<Producto>
-    {
-        new Producto { Id = 1, Nombre = "Lámpara", Descripcion = "Lámpara LED", Precio = 45.99m, Stock = 10 },
-        new Producto { Id = 2, Nombre = "Cojín", Descripcion = "Cojín decorativo", Precio = 19.99m, Stock = 20 }
-    };
+    private readonly string _connectionString;
 
-    public async Task<IEnumerable<Producto>> GetAll()
+    public ProductoRepository(string connectionString)
     {
-        return await Task.FromResult(_productos);
+        _connectionString = connectionString;
     }
 
-    public async Task<Producto> GetById(int id)
+    public async Task<List<Producto>> GetAllAsync()
     {
-        var producto = _productos.FirstOrDefault(p => p.Id == id);
-        return await Task.FromResult(producto);
-    }
+        var productos = new List<Producto>();
 
-    public async Task Add(Producto producto)
-    {
-        producto.Id = _productos.Count + 1;
-        _productos.Add(producto);
-        await Task.CompletedTask;
-    }
-
-    public async Task Update(Producto producto)
-    {
-        var index = _productos.FindIndex(p => p.Id == producto.Id);
-        if (index != -1)
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _productos[index] = producto;
+            await connection.OpenAsync();
+            string query = "SELECT Id, Nombre, Precio, CategoriaId, UrlImagen, Descripcion FROM Producto";
+            using (var command = new SqlCommand(query, connection))
+            {
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var producto = new Producto
+                        {
+                            Id = reader.GetInt32(0),
+                            Nombre = reader.GetString(1),
+                            Precio = reader.GetDecimal(2),
+                            CategoriaId = reader.GetInt32(3),
+                            UrlImagen = reader.GetString(4),
+                            Descripcion = reader.GetString(5)
+                        };
+                        productos.Add(producto);
+                    }
+                }
+            }
         }
-        await Task.CompletedTask;
+
+        return productos;
     }
 
-    public async Task Delete(int id)
+    public async Task<Producto?> GetByIdAsync(int id)
     {
-        var producto = _productos.FirstOrDefault(p => p.Id == id);
-        if (producto != null)
+        Producto? producto = null;
+
+        using (var connection = new SqlConnection(_connectionString))
         {
-            _productos.Remove(producto);
+            await connection.OpenAsync();
+            string query = "SELECT Id, Nombre, Precio, CategoriaId, UrlImagen, Descripcion FROM Producto WHERE Id = @Id";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        producto = new Producto
+                        {
+                            Id = reader.GetInt32(0),
+                            Nombre = reader.GetString(1),
+                            Precio = reader.GetDecimal(2),
+                            CategoriaId = reader.GetInt32(3),
+                            UrlImagen = reader.GetString(4),
+                            Descripcion = reader.GetString(5)
+                        };
+                    }
+                }
+            }
         }
-        await Task.CompletedTask;
+
+        return producto;
+    }
+
+    public async Task AddAsync(Producto producto)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            string query = "INSERT INTO Producto (Nombre, Precio, CategoriaId, UrlImagen, Descripcion) VALUES (@Nombre, @Precio, @CategoriaId, @UrlImagen, @Descripcion)";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Nombre", producto.Nombre);
+                command.Parameters.AddWithValue("@Precio", producto.Precio);
+                command.Parameters.AddWithValue("@CategoriaId", producto.CategoriaId);
+                command.Parameters.AddWithValue("@UrlImagen", producto.UrlImagen);
+                command.Parameters.AddWithValue("@Descripcion", producto.Descripcion);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+    }
+
+    public async Task UpdateAsync(Producto producto)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            string query = "UPDATE Producto SET Nombre = @Nombre, Precio = @Precio, CategoriaId = @CategoriaId, UrlImagen = @UrlImagen, Descripcion = @Descripcion WHERE Id = @Id";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", producto.Id);
+                command.Parameters.AddWithValue("@Nombre", producto.Nombre);
+                command.Parameters.AddWithValue("@Precio", producto.Precio);
+                command.Parameters.AddWithValue("@CategoriaId", producto.CategoriaId);
+                command.Parameters.AddWithValue("@UrlImagen", producto.UrlImagen);
+                command.Parameters.AddWithValue("@Descripcion", producto.Descripcion);
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            await connection.OpenAsync();
+            string query = "DELETE FROM Producto WHERE Id = @Id";
+            using (var command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return rowsAffected > 0;
+            }
+        }
     }
 }

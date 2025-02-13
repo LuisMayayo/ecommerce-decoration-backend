@@ -1,18 +1,9 @@
-using System.ComponentModel.DataAnnotations;
-
 public class Usuario
 {
-    [Key]
     public int Id { get; set; }
-
-    [Required]
-    public string Nombre { get; set; }
-
-    [Required, EmailAddress]
-    public string Email { get; set; }
-
-    [Required]
-    public string PasswordHash { get; set; }
-
-    public DateTime FechaRegistro { get; set; } = DateTime.Now;
+    public string Nombre { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;  // Hash de la contraseña
+    public string PasswordSalt { get; set; } = string.Empty;  // Sal de la contraseña
+    public DateTime FechaRegistro { get; set; }
 }

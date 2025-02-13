@@ -1,4 +1,4 @@
-public interface IPedidoRepository
+public interface IPedidoService
 {
     Task<Pedido> AddAsync(Pedido pedido);
     Task<Pedido> GetByIdAsync(int id);
