@@ -1,4 +1,6 @@
 using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class ProductoRepository : IProductoRepository
 {
@@ -23,7 +25,7 @@ public class ProductoRepository : IProductoRepository
                 {
                     while (await reader.ReadAsync())
                     {
-                        var producto = new Producto
+                        productos.Add(new Producto
                         {
                             Id = reader.GetInt32(0),
                             Nombre = reader.GetString(1),
@@ -31,8 +33,7 @@ public class ProductoRepository : IProductoRepository
                             CategoriaId = reader.GetInt32(3),
                             UrlImagen = reader.GetString(4),
                             Descripcion = reader.GetString(5)
-                        };
-                        productos.Add(producto);
+                        });
                     }
                 }
             }

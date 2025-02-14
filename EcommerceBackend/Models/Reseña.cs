@@ -1,8 +1,14 @@
 public class Reseña
 {
     public int Id { get; set; }
-    public int ProductoId { get; set; }  // Relación con Producto
-    public int UsuarioId { get; set; }  // Relación con Usuario
+    public int ProductoId { get; set; }
+    public int UsuarioId { get; set; }
     public string Comentario { get; set; } = string.Empty;
-    public int Calificacion { get; set; }  // Calificación de 1 a 5
+    public int Calificacion { get; set; }
+
+    public void Validate()
+    {
+        if (Calificacion < 1 || Calificacion > 5)
+            throw new ArgumentException("La calificación debe ser entre 1 y 5.");
+    }
 }

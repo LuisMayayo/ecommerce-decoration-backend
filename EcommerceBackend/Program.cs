@@ -11,19 +11,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Registro de dependencias
-builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+// Registro de dependencias de los repositorios y servicios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
-builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
-builder.Services.AddScoped<IReseñaRepository, ReseñaRepository>();
-
-// Servicios
-builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IReseñaRepository, ReseñaRepository>();
+builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
+
+// Registro de los servicios
+builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
-builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
 builder.Services.AddScoped<IReseñaService, ReseñaService>();
+builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
 
 var app = builder.Build();
 

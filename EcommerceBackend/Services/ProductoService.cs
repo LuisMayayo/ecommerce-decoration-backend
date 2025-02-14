@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 public class ProductoService : IProductoService
 {
     private readonly IProductoRepository _productoRepository;
@@ -19,11 +22,19 @@ public class ProductoService : IProductoService
 
     public async Task AddAsync(Producto producto)
     {
+        if (producto.Precio <= 0)
+        {
+            throw new ArgumentException("El precio del producto debe ser mayor que 0.");
+        }
         await _productoRepository.AddAsync(producto);
     }
 
     public async Task UpdateAsync(Producto producto)
     {
+        if (producto.Precio <= 0)
+        {
+            throw new ArgumentException("El precio del producto debe ser mayor que 0.");
+        }
         await _productoRepository.UpdateAsync(producto);
     }
 

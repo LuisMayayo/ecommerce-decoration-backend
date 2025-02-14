@@ -14,7 +14,8 @@ public class UsuarioRepository : IUsuarioRepository
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
-            string query = "INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro) VALUES (@Nombre, @Email, @PasswordHash, @PasswordSalt, @FechaRegistro)";
+            string query = "INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro) " +
+                           "VALUES (@Nombre, @Email, @PasswordHash, @PasswordSalt, @FechaRegistro)";
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Nombre", usuario.Nombre);

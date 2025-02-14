@@ -14,6 +14,12 @@ public class DetallePedidoService : IDetallePedidoService
 
     public async Task AddAsync(DetallePedido detallePedido)
     {
+        // Validaciones adicionales si es necesario
+        if (detallePedido.Cantidad <= 0)
+        {
+            throw new ArgumentException("La cantidad debe ser mayor que 0.");
+        }
+
         await _detallePedidoRepository.AddAsync(detallePedido);
     }
 }

@@ -9,6 +9,12 @@ public class UsuarioService : IUsuarioService
 
     public async Task<Usuario> AddAsync(Usuario usuario)
     {
+        // Validaciones adicionales para el correo electrónico
+        if (string.IsNullOrWhiteSpace(usuario.Email))
+        {
+            throw new ArgumentException("El correo electrónico no puede estar vacío.");
+        }
+
         return await _usuarioRepository.AddAsync(usuario);
     }
 

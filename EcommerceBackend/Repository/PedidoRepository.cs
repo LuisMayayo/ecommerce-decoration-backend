@@ -11,18 +11,30 @@ public class PedidoRepository : IPedidoRepository
 
     public async Task<Pedido> AddAsync(Pedido pedido)
     {
-        using (var connection = new SqlConnection(_connectionString))
+        if (pedido.UsuarioId <= 0 || pedido.Total <= 0)
         {
-            await connection.OpenAsync();
-            string query = "INSERT INTO Pedido (UsuarioId, FechaPedido, Total) VALUES (@UsuarioId, @FechaPedido, @Total); SELECT SCOPE_IDENTITY();";
-            using (var command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@UsuarioId", pedido.UsuarioId);
-                command.Parameters.AddWithValue("@FechaPedido", pedido.FechaPedido);
-                command.Parameters.AddWithValue("@Total", pedido.Total);
+            throw new ArgumentException("Los datos del pedido son inválidos.");
+        }
 
-                pedido.Id = Convert.ToInt32(await command.ExecuteScalarAsync());
+        try
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string query = "INSERT INTO Pedido (UsuarioId, FechaPedido, Total) VALUES (@UsuarioId, @FechaPedido, @Total); SELECT SCOPE_IDENTITY();";
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UsuarioId", pedido.UsuarioId);
+                    command.Parameters.AddWithValue("@FechaPedido", pedido.FechaPedido);
+                    command.Parameters.AddWithValue("@Total", pedido.Total);
+
+                    pedido.Id = Convert.ToInt32(await command.ExecuteScalarAsync());
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException("Error al agregar el pedido", ex);
         }
 
         return pedido;
@@ -32,27 +44,34 @@ public class PedidoRepository : IPedidoRepository
     {
         Pedido? pedido = null;
 
-        using (var connection = new SqlConnection(_connectionString))
+        try
         {
-            await connection.OpenAsync();
-            string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE Id = @Id";
-            using (var command = new SqlCommand(query, connection))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                command.Parameters.AddWithValue("@Id", id);
-                using (var reader = await command.ExecuteReaderAsync())
+                await connection.OpenAsync();
+                string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE Id = @Id";
+                using (var command = new SqlCommand(query, connection))
                 {
-                    if (await reader.ReadAsync())
+                    command.Parameters.AddWithValue("@Id", id);
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        pedido = new Pedido
+                        if (await reader.ReadAsync())
                         {
-                            Id = reader.GetInt32(0),
-                            UsuarioId = reader.GetInt32(1),
-                            FechaPedido = reader.GetDateTime(2),
-                            Total = reader.GetDecimal(3),
-                        };
+                            pedido = new Pedido
+                            {
+                                Id = reader.GetInt32(0),
+                                UsuarioId = reader.GetInt32(1),
+                                FechaPedido = reader.GetDateTime(2),
+                                Total = reader.GetDecimal(3)
+                            };
+                        }
                     }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException("Error al obtener el pedido", ex);
         }
 
         return pedido;
@@ -62,27 +81,34 @@ public class PedidoRepository : IPedidoRepository
     {
         var pedidos = new List<Pedido>();
 
-        using (var connection = new SqlConnection(_connectionString))
+        try
         {
-            await connection.OpenAsync();
-            string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE UsuarioId = @UsuarioId";
-            using (var command = new SqlCommand(query, connection))
+            using (var connection = new SqlConnection(_connectionString))
             {
-                command.Parameters.AddWithValue("@UsuarioId", userId);
-                using (var reader = await command.ExecuteReaderAsync())
+                await connection.OpenAsync();
+                string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE UsuarioId = @UsuarioId";
+                using (var command = new SqlCommand(query, connection))
                 {
-                    while (await reader.ReadAsync())
+                    command.Parameters.AddWithValue("@UsuarioId", userId);
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        pedidos.Add(new Pedido
+                        while (await reader.ReadAsync())
                         {
-                            Id = reader.GetInt32(0),
-                            UsuarioId = reader.GetInt32(1),
-                            FechaPedido = reader.GetDateTime(2),
-                            Total = reader.GetDecimal(3),
-                        });
+                            pedidos.Add(new Pedido
+                            {
+                                Id = reader.GetInt32(0),
+                                UsuarioId = reader.GetInt32(1),
+                                FechaPedido = reader.GetDateTime(2),
+                                Total = reader.GetDecimal(3)
+                            });
+                        }
                     }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException("Error al obtener los pedidos del usuario", ex);
         }
 
         return pedidos;
