@@ -42,6 +42,39 @@ public class ProductoRepository : IProductoRepository
         return productos;
     }
 
+    public async Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId)
+{
+    var productos = new List<Producto>();
+
+    using (var connection = new SqlConnection(_connectionString))
+    {
+        await connection.OpenAsync();
+        string query = "SELECT Id, Nombre, Precio, CategoriaId, UrlImagen, Descripcion FROM Producto WHERE CategoriaId = @CategoriaId";
+        using (var command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@CategoriaId", categoriaId);
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    productos.Add(new Producto
+                    {
+                        Id = reader.GetInt32(0),
+                        Nombre = reader.GetString(1),
+                        Precio = reader.GetDecimal(2),
+                        CategoriaId = reader.GetInt32(3),
+                        UrlImagen = reader.GetString(4),
+                        Descripcion = reader.GetString(5)
+                    });
+                }
+            }
+        }
+    }
+
+    return productos;
+}
+
+
     public async Task<Producto?> GetByIdAsync(int id)
     {
         Producto? producto = null;

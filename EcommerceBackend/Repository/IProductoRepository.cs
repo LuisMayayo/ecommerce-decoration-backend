@@ -8,4 +8,7 @@ public interface IProductoRepository
     Task AddAsync(Producto producto);
     Task UpdateAsync(Producto producto);
     Task<bool> DeleteAsync(int id);
+    
+    // Método para obtener productos filtrados por categoriaId
+    Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId);
 }

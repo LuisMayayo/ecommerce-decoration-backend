@@ -2,63 +2,95 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-[Route("api/[controller]")]
-[ApiController]
-public class ProductoController : ControllerBase
+namespace EcommerceAPI.Controllers
 {
-    private readonly IProductoService _productoService;
-
-    public ProductoController(IProductoService productoService)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductoController : ControllerBase
     {
-        _productoService = productoService;
-    }
+        private readonly IProductoService _productoService;
 
-    [HttpGet]
-    public async Task<ActionResult<List<Producto>>> GetAll()
-    {
-        var productos = await _productoService.GetAllAsync();
-        return Ok(productos);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Producto>> GetById(int id)
-    {
-        var producto = await _productoService.GetByIdAsync(id);
-        if (producto == null)
+        public ProductoController(IProductoService productoService)
         {
-            return NotFound();
+            _productoService = productoService;
         }
-        return Ok(producto);
-    }
 
-    [HttpPost]
-    public async Task<ActionResult<Producto>> Create([FromBody] Producto producto)
-    {
-        await _productoService.AddAsync(producto);
-        return CreatedAtAction(nameof(GetById), new { id = producto.Id }, producto);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] Producto producto)
-    {
-        var existingProducto = await _productoService.GetByIdAsync(id);
-        if (existingProducto == null)
+        /// <summary>
+        /// Obtiene todos los productos o los productos filtrados por categoría.
+        /// </summary>
+        /// <param name="categoriaId">ID de la categoría para filtrar los productos (opcional).</param>
+        /// <returns>Lista de productos.</returns>
+        [HttpGet]
+        public async Task<ActionResult<List<Producto>>> GetAll([FromQuery] int? categoriaId)
         {
-            return NotFound();
-        }
-        await _productoService.UpdateAsync(producto);
-        return NoContent();
-    }
+            if (categoriaId.HasValue)
+            {
+                // Filtrar los productos por categoriaId
+                var productos = await _productoService.GetByCategoriaIdAsync(categoriaId.Value);
+                return Ok(productos);
+            }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var producto = await _productoService.GetByIdAsync(id);
-        if (producto == null)
-        {
-            return NotFound();
+            // Si no hay filtro, retorna todos los productos
+            var productosAll = await _productoService.GetAllAsync();
+            return Ok(productosAll);
         }
-        await _productoService.DeleteAsync(id);
-        return NoContent();
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Producto>> GetById(int id)
+        {
+            var producto = await _productoService.GetByIdAsync(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+            return Ok(producto);
+        }
+
+        /// <summary>
+        /// Crea un nuevo producto.
+        /// </summary>
+        /// <param name="producto">Objeto Producto a crear.</param>
+        /// <returns>Producto creado.</returns>
+        [HttpPost]
+        public async Task<ActionResult<Producto>> Create([FromBody] Producto producto)
+        {
+            await _productoService.AddAsync(producto);
+            return CreatedAtAction(nameof(GetById), new { id = producto.Id }, producto);
+        }
+
+        /// <summary>
+        /// Actualiza un producto existente.
+        /// </summary>
+        /// <param name="id">ID del producto a actualizar.</param>
+        /// <param name="producto">Objeto Producto con los datos actualizados.</param>
+        /// <returns>Estado de la operación.</returns>
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Producto producto)
+        {
+            var existingProducto = await _productoService.GetByIdAsync(id);
+            if (existingProducto == null)
+            {
+                return NotFound();
+            }
+            await _productoService.UpdateAsync(producto);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Elimina un producto existente.
+        /// </summary>
+        /// <param name="id">ID del producto a eliminar.</param>
+        /// <returns>Estado de la operación.</returns>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var producto = await _productoService.GetByIdAsync(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+            await _productoService.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }

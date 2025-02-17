@@ -42,4 +42,9 @@ public class ProductoService : IProductoService
     {
         await _productoRepository.DeleteAsync(id);
     }
+    public async Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId)
+{
+    return await _productoRepository.GetByCategoriaIdAsync(categoriaId);
+}
+
 }

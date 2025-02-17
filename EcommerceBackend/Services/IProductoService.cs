@@ -8,4 +8,7 @@ public interface IProductoService
     Task AddAsync(Producto producto);
     Task UpdateAsync(Producto producto);
     Task DeleteAsync(int id);
+    
+    // Método para obtener productos filtrados por categoriaId
+    Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId);
 }
