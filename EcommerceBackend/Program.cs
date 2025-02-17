@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();  // Habilita Swagger
 
-// Registro de dependencias
+// Registro de dependencias de otros repositorios y servicios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
@@ -23,6 +23,10 @@ builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IReseñaService, ReseñaService>();
 builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
+
+// Agregar las dependencias de las categorías
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 
 var app = builder.Build();
 
