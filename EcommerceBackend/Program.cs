@@ -1,5 +1,16 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuración de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")  // Frontend URL
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Obtener la cadena de conexión desde appsettings.json
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -36,6 +47,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();  // Habilita Swagger UI en el entorno de desarrollo
 }
+
+// Usar CORS antes de usar la autorización
+app.UseCors("AllowLocalhost");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
