@@ -1,18 +1,52 @@
+/*
+  SCRIPT COMPLETO PARA CREAR LA BASE DE DATOS EcommerceDB Y TODAS LAS TABLAS
+  INCLUYENDO LA TABLA USUARIO CON COL "EsAdmin"
+  Y EJEMPLO DE INSERTS PARA USUARIOS ADMIN Y NORMAL
+*/
+
+-- 0. Crear la base de datos
 CREATE DATABASE EcommerceDB;
+GO
 
-
-
--- 1. Crear la tabla de Categoria
 USE EcommerceDB;
+GO
 
--- 1. Crear la tabla de Categoria con la nueva columna UrlImagen
+-------------------------------------------------------------------------------
+-- 1) TABLA USUARIO (con EsAdmin para distinguir roles)
+-------------------------------------------------------------------------------
+CREATE TABLE Usuario (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(255) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    PasswordSalt NVARCHAR(255) NOT NULL,
+    FechaRegistro DATETIME DEFAULT GETDATE(),
+    EsAdmin BIT NOT NULL DEFAULT 0
+);
+
+-------------------------------------------------------------------------------
+-- 2) INSERTAR USUARIOS DE EJEMPLO
+-- * SUSTITUIR LOS VALORES de PasswordHash y PasswordSalt POR LOS CORRECTOS *
+-- generados con la misma lógica (HMACSHA512) que tu backend
+-------------------------------------------------------------------------------
+INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin)
+VALUES
+    ('Admin Local', 'admin@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 1),
+    ('Usuario Normal', 'user@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 0);
+
+-------------------------------------------------------------------------------
+-- 3) TABLA CATEGORIA
+-------------------------------------------------------------------------------
 CREATE TABLE Categoria (
     Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
     Nombre NVARCHAR(100) NOT NULL,  -- Nombre de la categoría
-    Descripcion NVARCHAR(500),  -- Descripción de la categoría
-    UrlImagen NVARCHAR(255) NOT NULL  -- URL de la imagen de la categoría
+    Descripcion NVARCHAR(500),      -- Descripción de la categoría
+    UrlImagen NVARCHAR(255) NOT NULL -- URL de la imagen de la categoría
 );
 
+-------------------------------------------------------------------------------
+-- 4) TABLA PRODUCTO
+-------------------------------------------------------------------------------
 CREATE TABLE Producto (
     Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
     Nombre NVARCHAR(100) NOT NULL,
@@ -20,16 +54,21 @@ CREATE TABLE Producto (
     CategoriaId INT NOT NULL,  -- Relación con la categoría
     UrlImagen NVARCHAR(255),
     Descripcion NVARCHAR(500),
-    FOREIGN KEY (CategoriaId) REFERENCES Categoria(Id)  -- Relación con la tabla Categoria
+    FOREIGN KEY (CategoriaId) REFERENCES Categoria(Id)
 );
--- 1. Insertar las categorías
+
+-------------------------------------------------------------------------------
+-- 5) INSERTAR CATEGORÍAS (Textil, Decoración vertical, Accesorio decorativo)
+-------------------------------------------------------------------------------
 INSERT INTO Categoria (Nombre, Descripcion, UrlImagen)
 VALUES
     ('Textil', 'Productos relacionados con textiles, como sábanas, toallas, cortinas, alfombras, etc.', 'https://www.happers.es/server/Portal_0010674/img/blogposts/guia-de-textiles-para-el-hogar-como-combinar-y-cuidar_6979.jpg'),
     ('Decoración vertical', 'Productos relacionados con la decoración de paredes, como cuadros, espejos, vinilos, estanterías y otros accesorios verticales.', 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSOEg6bKvWq-MeKNu9xtQrQ1paV9trxyCOA6wrljq8ltSXAe0R1g7579NMLEeopASW0OqnpLwdHk5lyaRdjHmd5dvDE8cK_v_BaglZLow4'),
     ('Accesorio decorativo', 'Productos que mejoran la estética de los espacios, como lámparas, jarrones, cuadros, estanterías, etc.', 'https://ixia.es/media/wysiwyg/2023-03/02-salon-straight-line-2023-05-11.jpg');
 
--- 2. Insertar productos en la categoría 'Textil'
+-------------------------------------------------------------------------------
+-- 6) INSERTAR PRODUCTOS para la categoría 'Textil'
+-------------------------------------------------------------------------------
 INSERT INTO Producto (Nombre, Precio, CategoriaId, UrlImagen, Descripcion)
 VALUES
     ('ALFOMBRA MULTICOLOR LANA-ALGODÓN 160 X 230 CM', 199.99, 1, 'https://ixia.es/media/catalog/product/6/1/614920.jpg?width=345&height=345&image-type=small_image&width=345&t=1739749309', 'Alfombra multicolor de lana y algodón, tamaño 160 x 230 cm. Ideal para espacios de estilo moderno.'),
@@ -46,7 +85,9 @@ VALUES
     ('COJÍN BLANCO/BEIGE JACQUARD DECORACIÓN 45 X 45 CM', 24.99, 1, 'https://ixia.es/media/catalog/product/6/1/615080.jpg?quality=80&bg-color=255,255,255&fit=bounds&height=700&width=700&canvas=700:700', 'Cojín decorativo blanco/beige jacquard, tamaño 45 x 45 cm. Combina con cualquier estilo de decoración.'),
     ('COJÍN BLANCO-VERDE JACQUARD DECORACIÓN 45 X 45 CM', 24.99, 1, 'https://ixia.es/media/catalog/product/6/1/615072.jpg?quality=80&bg-color=255,255,255&fit=bounds&height=700&width=700&canvas=700:700', 'Cojín decorativo blanco-verde jacquard, tamaño 45 x 45 cm. Ideal para resaltar tu espacio.');
 
--- 3. Insertar productos en la categoría 'Decoración vertical'
+-------------------------------------------------------------------------------
+-- 7) INSERTAR PRODUCTOS para la categoría 'Decoración vertical'
+-------------------------------------------------------------------------------
 INSERT INTO Producto (Nombre, Precio, CategoriaId, UrlImagen, Descripcion)
 VALUES
     ('CUADRO PINTURA ABSTRACTO LIENZO 60 X 150 CM', 159.99, 2, 'https://ixia.es/media/catalog/product/6/1/615166.jpg?width=345&height=345&image-type=small_image&width=345&t=1739749315', 'Cuadro de pintura abstracto en lienzo, tamaño 60 x 150 cm. Ideal para añadir un toque moderno a tu espacio.'),
@@ -65,7 +106,9 @@ VALUES
     ('ESPEJO NEGRO METAL-CRISTAL DECORACIÓN 82 X 7 X 113 CM', 349.99, 2, 'https://ixia.es/media/catalog/product/6/1/613600.jpg?width=345&height=345&image-type=small_image&width=345&t=1739749264', 'Espejo de metal negro y cristal, tamaño 82 x 7 x 113 cm. Ideal para un ambiente moderno y elegante.'),
     ('ESPEJO MARCO DORADO MADERA DE PINO 65 X 65 CM', 149.99, 2, 'https://ixia.es/media/catalog/product/6/1/610510.jpg?width=345&height=345&image-type=small_image&width=345&t=1739747213', 'Espejo con marco dorado de madera de pino, tamaño 65 x 65 cm. Aporta lujo y calidez a tu hogar.');
 
--- 4. Insertar productos en la categoría 'Accesorio decorativo'
+-------------------------------------------------------------------------------
+-- 8) INSERTAR PRODUCTOS para la categoría 'Accesorio decorativo'
+-------------------------------------------------------------------------------
 INSERT INTO Producto (Nombre, Precio, CategoriaId, UrlImagen, Descripcion)
 VALUES
     ('FIGURA ABSTRACTA POLIRESINA DECORACIÓN 27,50 X 14,50 X 29 CM', 49.99, 3, 'https://ixia.es/media/catalog/product/6/1/613483.jpg?width=345&height=345&image-type=small_image&width=345&t=1739749255', 'Figura abstracta en poliresina, tamaño 27,50 X 14,50 X 29 cm. Ideal para decoración de interiores.'),
@@ -88,54 +131,42 @@ VALUES
     ('FIGURA PEZ MADERA-FIBRA NATURAL 70 X 12 X 53 CM', 89.99, 3, 'https://ixia.es/media/catalog/product/6/0/609795.jpg?width=345&height=345&image-type=small_image&width=345&t=1739748866', 'Figura de pez en madera-fibra natural, tamaño 70 X 12 X 53 cm.'),
     ('FIGURA PECES MADERA-HIERRO DECORACIÓN 56 X 7 X 31 CM', 99.99, 3, 'https://ixia.es/media/catalog/product/6/0/609802.jpg?width=345&height=345&image-type=small_image&width=345&t=1739748866', 'Figura de peces en madera-hierro, tamaño 56 X 7 X 31 cm, decoración ideal para interiores.');
 
-
-
--- 6. Crear la tabla de Pedido
+-------------------------------------------------------------------------------
+-- 9) TABLA PEDIDO
+-------------------------------------------------------------------------------
 CREATE TABLE Pedido (
-    Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
-    UsuarioId INT NOT NULL,  -- Relación con el Usuario
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UsuarioId INT NOT NULL,
     FechaPedido DATETIME DEFAULT GETDATE(),
     Total DECIMAL(18,2) NOT NULL
 );
 
--- 7. Crear la tabla de DetallePedido
+-------------------------------------------------------------------------------
+-- 10) TABLA DETALLEPEDIDO
+-------------------------------------------------------------------------------
 CREATE TABLE DetallePedido (
-    Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
-    PedidoId INT NOT NULL,  -- Relación con Pedido
-    ProductoId INT NOT NULL,  -- Relación con Producto
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    PedidoId INT NOT NULL,
+    ProductoId INT NOT NULL,
     Cantidad INT NOT NULL,
     PrecioUnitario DECIMAL(18,2) NOT NULL
 );
 
--- 8. Crear la tabla de Reseña
+-------------------------------------------------------------------------------
+-- 11) TABLA RESEÑA
+-------------------------------------------------------------------------------
 CREATE TABLE Reseña (
-    Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
-    ProductoId INT NOT NULL,  -- Relación con Producto
-    UsuarioId INT NOT NULL,  -- Relación con Usuario
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    ProductoId INT NOT NULL,
+    UsuarioId INT NOT NULL,
     Comentario NVARCHAR(1000),
-    Calificacion INT CHECK (Calificacion BETWEEN 1 AND 5)  -- Validación de calificación entre 1 y 5
+    Calificacion INT CHECK (Calificacion BETWEEN 1 AND 5)
 );
 
--- 9. Insertar datos de prueba en la tabla de Usuario
-INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro)
-VALUES
-    ('Juan Perez', 'juan@correo.com', 'hashedpassword1', 'salt1', GETDATE()),
-    ('Maria Lopez', 'maria@correo.com', 'hashedpassword2', 'salt2', GETDATE());
-
--- 10. Insertar datos de prueba en la tabla de Pedido
-INSERT INTO Pedido (UsuarioId, Total)
-VALUES
-    (1, 799.99),  -- Pedido de Juan Perez
-    (2, 499.99);  -- Pedido de Maria Lopez
-
--- 11. Insertar datos de prueba en la tabla de DetallePedido
-INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario)
-VALUES
-    (1, 1, 1, 799.99),  -- Detalle del pedido de Juan Perez
-    (2, 2, 1, 499.99);  -- Detalle del pedido de Maria Lopez
-
--- 12. Insertar datos de prueba en la tabla de Reseña
-INSERT INTO Reseña (ProductoId, UsuarioId, Comentario, Calificacion)
-VALUES
-    (1, 1, 'Excelente cama, muy cómoda.', 5),  -- Reseña de Juan sobre la Cama King Size
-    (2, 2, 'Muy buen sofá, se ve elegante.', 4);  -- Reseña de Maria sobre el Sofá Cuero
+-------------------------------------------------------------------------------
+-- 12) EJEMPLO DE INSERCIÓN EN PEDIDO, DETALLEPEDIDO, RESEÑA (si deseas)
+-------------------------------------------------------------------------------
+-- (Opcional, ajusta a tu gusto)
+-- INSERT INTO Pedido (UsuarioId, Total) VALUES (1, 799.99);
+-- INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario) VALUES (1, 1, 1, 799.99);
+-- INSERT INTO Reseña (ProductoId, UsuarioId, Comentario, Calificacion) VALUES (1, 1, 'Muy bueno', 5);
