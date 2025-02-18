@@ -18,10 +18,9 @@ public class CategoriaController : ControllerBase
     public async Task<ActionResult<IEnumerable<Categoria>>> GetAll()
     {
         var categorias = await _categoriaService.GetAllAsync();
-        return Ok(categorias);
+        return Ok(categorias); 
     }
 
-    // Obtener una categoría por su ID
     [HttpGet("{id}")]
     public async Task<ActionResult<Categoria>> GetById(int id)
     {
@@ -32,4 +31,5 @@ public class CategoriaController : ControllerBase
         }
         return Ok(categoria);
     }
+
 }

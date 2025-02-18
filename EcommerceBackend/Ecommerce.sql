@@ -1,15 +1,18 @@
 CREATE DATABASE EcommerceDB;
 
-USE EcommerceDB;
-
 
 
 -- 1. Crear la tabla de Categoria
+USE EcommerceDB;
+
+-- 1. Crear la tabla de Categoria con la nueva columna UrlImagen
 CREATE TABLE Categoria (
     Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
     Nombre NVARCHAR(100) NOT NULL,  -- Nombre de la categoría
-    Descripcion NVARCHAR(500)  -- Descripción de la categoría
+    Descripcion NVARCHAR(500),  -- Descripción de la categoría
+    UrlImagen NVARCHAR(255) NOT NULL  -- URL de la imagen de la categoría
 );
+
 CREATE TABLE Producto (
     Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
     Nombre NVARCHAR(100) NOT NULL,
@@ -20,11 +23,11 @@ CREATE TABLE Producto (
     FOREIGN KEY (CategoriaId) REFERENCES Categoria(Id)  -- Relación con la tabla Categoria
 );
 -- 1. Insertar las categorías
-INSERT INTO Categoria (Nombre, Descripcion)
+INSERT INTO Categoria (Nombre, Descripcion, UrlImagen)
 VALUES
-    ('Textil', 'Productos relacionados con textiles, como sábanas, toallas, cortinas, alfombras, etc.'),
-    ('Accesorio decorativo', 'Productos que mejoran la estética de los espacios, como lámparas, jarrones, cuadros, estanterías, etc.'),
-    ('Decoración vertical', 'Productos relacionados con la decoración de paredes, como cuadros, espejos, vinilos, estanterías y otros accesorios verticales.');
+    ('Textil', 'Productos relacionados con textiles, como sábanas, toallas, cortinas, alfombras, etc.', 'https://www.happers.es/server/Portal_0010674/img/blogposts/guia-de-textiles-para-el-hogar-como-combinar-y-cuidar_6979.jpg'),
+    ('Accesorio decorativo', 'Productos que mejoran la estética de los espacios, como lámparas, jarrones, cuadros, estanterías, etc.', 'https://ixia.es/media/wysiwyg/2023-03/02-salon-straight-line-2023-05-11.jpg'),
+    ('Decoración vertical', 'Productos relacionados con la decoración de paredes, como cuadros, espejos, vinilos, estanterías y otros accesorios verticales.', 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSOEg6bKvWq-MeKNu9xtQrQ1paV9trxyCOA6wrljq8ltSXAe0R1g7579NMLEeopASW0OqnpLwdHk5lyaRdjHmd5dvDE8cK_v_BaglZLow4');
 
 -- 2. Insertar productos en la categoría 'Textil'
 INSERT INTO Producto (Nombre, Precio, CategoriaId, UrlImagen, Descripcion)

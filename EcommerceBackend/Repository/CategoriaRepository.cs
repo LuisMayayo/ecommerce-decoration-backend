@@ -18,7 +18,7 @@ public class CategoriaRepository : ICategoriaRepository
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Descripcion FROM Categoria";
+            string query = "SELECT Id, Nombre, Descripcion, UrlImagen FROM Categoria"; 
             using (var command = new SqlCommand(query, connection))
             {
                 using (var reader = await command.ExecuteReaderAsync())
@@ -29,7 +29,8 @@ public class CategoriaRepository : ICategoriaRepository
                         {
                             Id = reader.GetInt32(0),
                             Nombre = reader.GetString(1),
-                            Descripcion = reader.GetString(2)
+                            Descripcion = reader.GetString(2),
+                            UrlImagen = reader.GetString(3) 
                         });
                     }
                 }
@@ -46,7 +47,7 @@ public class CategoriaRepository : ICategoriaRepository
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Descripcion FROM Categoria WHERE Id = @Id";
+            string query = "SELECT Id, Nombre, Descripcion, UrlImagen FROM Categoria WHERE Id = @Id";
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Id", id);
@@ -58,7 +59,8 @@ public class CategoriaRepository : ICategoriaRepository
                         {
                             Id = reader.GetInt32(0),
                             Nombre = reader.GetString(1),
-                            Descripcion = reader.GetString(2)
+                            Descripcion = reader.GetString(2),
+                            UrlImagen = reader.GetString(3) 
                         };
                     }
                 }
@@ -68,3 +70,4 @@ public class CategoriaRepository : ICategoriaRepository
         return categoria;
     }
 }
+
