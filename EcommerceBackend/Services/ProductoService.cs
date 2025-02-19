@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 public class ProductoService : IProductoService
@@ -10,9 +11,20 @@ public class ProductoService : IProductoService
         _productoRepository = productoRepository;
     }
 
-    public async Task<List<Producto>> GetAllAsync()
+    public async Task<List<ProductoDTO>> GetAllAsync()
     {
-        return await _productoRepository.GetAllAsync();
+        var productos = await _productoRepository.GetAllAsync();
+
+        // Transformar los productos a ProductoDTO
+        return productos.Select(p => new ProductoDTO
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Precio = p.Precio,
+            Descripcion = p.Descripcion,
+            UrlImagen = p.UrlImagen,
+            CategoriaId = p.CategoriaId
+        }).ToList();
     }
 
     public async Task<Producto?> GetByIdAsync(int id)
@@ -42,9 +54,18 @@ public class ProductoService : IProductoService
     {
         await _productoRepository.DeleteAsync(id);
     }
-    public async Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId)
-{
-    return await _productoRepository.GetByCategoriaIdAsync(categoriaId);
-}
 
+    public async Task<List<ProductoDTO>> GetByCategoriaIdAsync(int categoriaId)
+    {
+        var productos = await _productoRepository.GetByCategoriaIdAsync(categoriaId);
+        return productos.Select(p => new ProductoDTO
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Precio = p.Precio,
+            Descripcion = p.Descripcion,
+            UrlImagen = p.UrlImagen,
+            CategoriaId = p.CategoriaId
+        }).ToList();
+    }
 }
