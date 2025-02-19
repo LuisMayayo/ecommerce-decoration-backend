@@ -17,8 +17,6 @@ CREATE TABLE Usuario (
 
 -------------------------------------------------------------------------------
 -- 2) INSERTAR USUARIOS DE EJEMPLO
--- * SUSTITUIR LOS VALORES de PasswordHash y PasswordSalt POR LOS CORRECTOS *
--- generados con la misma lógica (HMACSHA512) que tu backend
 -------------------------------------------------------------------------------
 INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin)
 VALUES
@@ -36,20 +34,20 @@ WHERE Email = 'admin@correo.com';
 -- 3) TABLA CATEGORIA
 -------------------------------------------------------------------------------
 CREATE TABLE Categoria (
-    Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
-    Nombre NVARCHAR(100) NOT NULL,       -- Nombre de la categoría
-    Descripcion NVARCHAR(500),           -- Descripción de la categoría
-    UrlImagen NVARCHAR(255) NOT NULL      -- URL de la imagen de la categoría
+    Id INT IDENTITY(1,1) PRIMARY KEY, 
+    Nombre NVARCHAR(100) NOT NULL,  
+    Descripcion NVARCHAR(500),   
+    UrlImagen NVARCHAR(255) NOT NULL
 );
 
 -------------------------------------------------------------------------------
 -- 4) TABLA PRODUCTO
 -------------------------------------------------------------------------------
 CREATE TABLE Producto (
-    Id INT IDENTITY(1,1) PRIMARY KEY,    -- Auto-incrementable
+    Id INT IDENTITY(1,1) PRIMARY KEY,
     Nombre NVARCHAR(100) NOT NULL,
     Precio DECIMAL(18,2) NOT NULL,
-    CategoriaId INT NOT NULL,             -- Relación con la categoría
+    CategoriaId INT NOT NULL, 
     UrlImagen NVARCHAR(255),
     Descripcion NVARCHAR(500),
     FOREIGN KEY (CategoriaId) REFERENCES Categoria(Id)
@@ -162,7 +160,7 @@ CREATE TABLE Reseña (
 );
 
 -------------------------------------------------------------------------------
--- 12) INSERCIÓN EN PEDIDO, DETALLEPEDIDO, RESEÑA
+-- 12) INSERTS EN PEDIDO, DETALLEPEDIDO, RESEÑA
 -------------------------------------------------------------------------------
 
 -- INSERT INTO Pedido (UsuarioId, Total) VALUES (1, 799.99);
