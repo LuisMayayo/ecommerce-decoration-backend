@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 public class ProductoService : IProductoService
 {
     private readonly IProductoRepository _productoRepository;
@@ -14,58 +10,33 @@ public class ProductoService : IProductoService
     public async Task<List<ProductoDTO>> GetAllAsync()
     {
         var productos = await _productoRepository.GetAllAsync();
-
-        // Transformar los productos a ProductoDTO
-        return productos.Select(p => new ProductoDTO
-        {
-            Id = p.Id,
-            Nombre = p.Nombre,
-            Precio = p.Precio,
-            Descripcion = p.Descripcion,
-            UrlImagen = p.UrlImagen,
-            CategoriaId = p.CategoriaId
-        }).ToList();
+        return productos.Select(p => p.ToDTO()).ToList(); // Conversión a DTO
     }
 
-    public async Task<Producto?> GetByIdAsync(int id)
+    public async Task<ProductoDTO?> GetByIdAsync(int id)
     {
-        return await _productoRepository.GetByIdAsync(id);
+        var producto = await _productoRepository.GetByIdAsync(id);
+        return producto?.ToDTO();
+    }
+
+    public async Task<List<ProductoDTO>> GetByCategoriaIdAsync(int categoriaId)
+    {
+        var productos = await _productoRepository.GetByCategoriaIdAsync(categoriaId);
+        return productos.Select(p => p.ToDTO()).ToList(); // Conversión a DTO
     }
 
     public async Task AddAsync(Producto producto)
     {
-        if (producto.Precio <= 0)
-        {
-            throw new ArgumentException("El precio del producto debe ser mayor que 0.");
-        }
         await _productoRepository.AddAsync(producto);
     }
 
     public async Task UpdateAsync(Producto producto)
     {
-        if (producto.Precio <= 0)
-        {
-            throw new ArgumentException("El precio del producto debe ser mayor que 0.");
-        }
         await _productoRepository.UpdateAsync(producto);
     }
 
     public async Task DeleteAsync(int id)
     {
         await _productoRepository.DeleteAsync(id);
-    }
-
-    public async Task<List<ProductoDTO>> GetByCategoriaIdAsync(int categoriaId)
-    {
-        var productos = await _productoRepository.GetByCategoriaIdAsync(categoriaId);
-        return productos.Select(p => new ProductoDTO
-        {
-            Id = p.Id,
-            Nombre = p.Nombre,
-            Precio = p.Precio,
-            Descripcion = p.Descripcion,
-            UrlImagen = p.UrlImagen,
-            CategoriaId = p.CategoriaId
-        }).ToList();
     }
 }

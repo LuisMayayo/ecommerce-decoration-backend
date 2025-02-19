@@ -14,4 +14,18 @@ public class Producto
         if (string.IsNullOrEmpty(Nombre))
             throw new ArgumentException("El nombre es requerido.");
     }
+
+    // Método para convertir un Producto a un ProductoDTO
+    public ProductoDTO ToDTO()
+    {
+        return new ProductoDTO
+        {
+            Id = this.Id,
+            Nombre = this.Nombre,
+            Precio = this.Precio,
+            Descripcion = this.Descripcion,
+            UrlImagen = this.UrlImagen,
+            CategoriaId = this.CategoriaId
+        };
+    }
 }
