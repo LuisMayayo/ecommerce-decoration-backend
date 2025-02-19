@@ -15,22 +15,31 @@ namespace EcommerceBackend.Controllers
             _usuarioService = usuarioService;
         }
 
-        // Crear un nuevo usuario
+        // Registro de usuario
         [HttpPost("register")]
-        public async Task<ActionResult<Usuario>> Register([FromBody] Usuario usuario)
+        public async Task<ActionResult<Usuario>> Register([FromBody] RegisterRequest request)
         {
             // Verificar si el usuario ya existe
-            var existingUser = await _usuarioService.GetByEmailAsync(usuario.Email);
+            var existingUser = await _usuarioService.GetByEmailAsync(request.Email);
             if (existingUser != null)
             {
                 return Conflict("El usuario ya existe con ese correo.");
             }
 
-            // Crear el PasswordHash y PasswordSalt
+            // Crear un nuevo objeto Usuario con los datos recibidos
+            var usuario = new Usuario
+            {
+                Nombre = request.Nombre,
+                Email = request.Email,
+                // Asignamos la fecha actual para evitar DateTime.MinValue
+                FechaRegistro = DateTime.Now  
+            };
+
+            // Generar el PasswordHash y PasswordSalt usando la contraseña en claro
             using (var hmac = new HMACSHA512())
             {
-                usuario.PasswordSalt = Convert.ToBase64String(hmac.Key);  // Guardar la sal
-                usuario.PasswordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(usuario.PasswordHash))); // Guardar el hash
+                usuario.PasswordSalt = Convert.ToBase64String(hmac.Key);
+                usuario.PasswordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)));
             }
 
             // Registrar el usuario
@@ -51,7 +60,7 @@ namespace EcommerceBackend.Controllers
             return Ok(usuario);
         }
 
-        // Login del usuario (autenticación)
+        // Login del usuario
         [HttpPost("login")]
         public async Task<ActionResult<Usuario>> Login([FromBody] LoginRequest request)
         {
@@ -74,7 +83,15 @@ namespace EcommerceBackend.Controllers
         }
     }
 
-    // Clase para la solicitud de login
+    // Objeto para la solicitud de registro
+    public class RegisterRequest
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    // Objeto para la solicitud de login
     public class LoginRequest
     {
         public string Email { get; set; } = string.Empty;
