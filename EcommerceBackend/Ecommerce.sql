@@ -1,9 +1,3 @@
-/*
-  SCRIPT COMPLETO PARA CREAR LA BASE DE DATOS EcommerceDB Y TODAS LAS TABLAS
-  INCLUYENDO LA TABLA USUARIO CON LA COLUMNA "EsAdmin"
-  Y EJEMPLO DE INSERTS PARA USUARIOS ADMIN Y NORMAL
-*/
-
 -- 0. Crear la base de datos
 CREATE DATABASE EcommerceDB;
 
@@ -169,8 +163,9 @@ CREATE TABLE Reseña (
 );
 
 -------------------------------------------------------------------------------
--- 12) EJEMPLO DE INSERCIÓN EN PEDIDO, DETALLEPEDIDO, RESEÑA (OPCIONAL)
+-- 12) INSERCIÓN EN PEDIDO, DETALLEPEDIDO, RESEÑA
 -------------------------------------------------------------------------------
+
 -- INSERT INTO Pedido (UsuarioId, Total) VALUES (1, 799.99);
 -- INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario) VALUES (1, 1, 1, 799.99);
 -- INSERT INTO Reseña (ProductoId, UsuarioId, Comentario, Calificacion) VALUES (1, 1, 'Muy bueno', 5);
