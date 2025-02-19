@@ -6,6 +6,7 @@ public class Usuario
     public string PasswordHash { get; set; } = string.Empty;
     public string PasswordSalt { get; set; } = string.Empty;
     public DateTime FechaRegistro { get; set; }
+    public bool EsAdmin { get; set; }
 
     public void Validate()
     {

@@ -1,6 +1,6 @@
 /*
   SCRIPT COMPLETO PARA CREAR LA BASE DE DATOS EcommerceDB Y TODAS LAS TABLAS
-  INCLUYENDO LA TABLA USUARIO CON COL "EsAdmin"
+  INCLUYENDO LA TABLA USUARIO CON LA COLUMNA "EsAdmin"
   Y EJEMPLO DE INSERTS PARA USUARIOS ADMIN Y NORMAL
 */
 
@@ -33,23 +33,30 @@ VALUES
     ('Usuario Normal', 'user@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 0);
 
 -------------------------------------------------------------------------------
+-- Consulta para verificar el login (selecciona todos los campos, incluido EsAdmin)
+-------------------------------------------------------------------------------
+SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin
+FROM Usuario
+WHERE Email = 'admin@correo.com';
+
+-------------------------------------------------------------------------------
 -- 3) TABLA CATEGORIA
 -------------------------------------------------------------------------------
 CREATE TABLE Categoria (
     Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
-    Nombre NVARCHAR(100) NOT NULL,  -- Nombre de la categoría
-    Descripcion NVARCHAR(500),      -- Descripción de la categoría
-    UrlImagen NVARCHAR(255) NOT NULL -- URL de la imagen de la categoría
+    Nombre NVARCHAR(100) NOT NULL,       -- Nombre de la categoría
+    Descripcion NVARCHAR(500),           -- Descripción de la categoría
+    UrlImagen NVARCHAR(255) NOT NULL      -- URL de la imagen de la categoría
 );
 
 -------------------------------------------------------------------------------
 -- 4) TABLA PRODUCTO
 -------------------------------------------------------------------------------
 CREATE TABLE Producto (
-    Id INT IDENTITY(1,1) PRIMARY KEY,  -- Auto-incrementable
+    Id INT IDENTITY(1,1) PRIMARY KEY,    -- Auto-incrementable
     Nombre NVARCHAR(100) NOT NULL,
     Precio DECIMAL(18,2) NOT NULL,
-    CategoriaId INT NOT NULL,  -- Relación con la categoría
+    CategoriaId INT NOT NULL,             -- Relación con la categoría
     UrlImagen NVARCHAR(255),
     Descripcion NVARCHAR(500),
     FOREIGN KEY (CategoriaId) REFERENCES Categoria(Id)
@@ -162,9 +169,8 @@ CREATE TABLE Reseña (
 );
 
 -------------------------------------------------------------------------------
--- 12) EJEMPLO DE INSERCIÓN EN PEDIDO, DETALLEPEDIDO, RESEÑA (si deseas)
+-- 12) EJEMPLO DE INSERCIÓN EN PEDIDO, DETALLEPEDIDO, RESEÑA (OPCIONAL)
 -------------------------------------------------------------------------------
--- (Opcional, ajusta a tu gusto)
 -- INSERT INTO Pedido (UsuarioId, Total) VALUES (1, 799.99);
 -- INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario) VALUES (1, 1, 1, 799.99);
 -- INSERT INTO Reseña (ProductoId, UsuarioId, Comentario, Calificacion) VALUES (1, 1, 'Muy bueno', 5);
