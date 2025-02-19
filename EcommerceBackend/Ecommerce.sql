@@ -1,4 +1,3 @@
--- 0. Crear la base de datos
 CREATE DATABASE EcommerceDB;
 
 USE EcommerceDB;
