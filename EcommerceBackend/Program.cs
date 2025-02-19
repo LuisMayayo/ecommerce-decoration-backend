@@ -54,19 +54,4 @@ app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
-// Generar hash y salt para una contraseña
-#if DEBUG
-string password = "admin123";
-using (var hmac = new System.Security.Cryptography.HMACSHA512())
-{
-    string salt = Convert.ToBase64String(hmac.Key);
-    string hash = Convert.ToBase64String(hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password)));
-    Console.WriteLine("=== Generando credenciales de ejemplo ===");
-    Console.WriteLine($"Salt: {salt}");
-    Console.WriteLine($"Hash: {hash}");
-    Console.WriteLine("=========================================");
-}
-#endif
-
 app.Run();
