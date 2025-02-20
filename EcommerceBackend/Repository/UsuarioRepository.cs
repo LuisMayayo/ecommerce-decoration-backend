@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 public class UsuarioRepository : IUsuarioRepository
 {
@@ -14,8 +15,11 @@ public class UsuarioRepository : IUsuarioRepository
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
-            string query = "INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro) " +
-                           "VALUES (@Nombre, @Email, @PasswordHash, @PasswordSalt, @FechaRegistro)";
+            string query = @"
+                INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin) 
+                OUTPUT INSERTED.Id 
+                VALUES (@Nombre, @Email, @PasswordHash, @PasswordSalt, @FechaRegistro, @EsAdmin)";
+            
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Nombre", usuario.Nombre);
@@ -23,7 +27,10 @@ public class UsuarioRepository : IUsuarioRepository
                 command.Parameters.AddWithValue("@PasswordHash", usuario.PasswordHash);
                 command.Parameters.AddWithValue("@PasswordSalt", usuario.PasswordSalt);
                 command.Parameters.AddWithValue("@FechaRegistro", usuario.FechaRegistro);
-                await command.ExecuteNonQueryAsync();
+                command.Parameters.AddWithValue("@EsAdmin", usuario.EsAdmin); 
+
+                // Recuperar el ID generado automáticamente
+                usuario.Id = (int)await command.ExecuteScalarAsync();
             }
         }
         return usuario;
@@ -36,7 +43,7 @@ public class UsuarioRepository : IUsuarioRepository
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro FROM Usuario WHERE Id = @Id";
+            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin FROM Usuario WHERE Id = @Id";
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Id", id);
@@ -51,7 +58,8 @@ public class UsuarioRepository : IUsuarioRepository
                             Email = reader.GetString(2),
                             PasswordHash = reader.GetString(3),
                             PasswordSalt = reader.GetString(4),
-                            FechaRegistro = reader.GetDateTime(5)
+                            FechaRegistro = reader.GetDateTime(5),
+                            EsAdmin = reader.GetBoolean(6)
                         };
                     }
                 }
@@ -68,7 +76,7 @@ public class UsuarioRepository : IUsuarioRepository
         using (var connection = new SqlConnection(_connectionString))
         {
             await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro FROM Usuario WHERE Email = @Email";
+            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin FROM Usuario WHERE Email = @Email";
             using (var command = new SqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Email", email);
@@ -83,7 +91,8 @@ public class UsuarioRepository : IUsuarioRepository
                             Email = reader.GetString(2),
                             PasswordHash = reader.GetString(3),
                             PasswordSalt = reader.GetString(4),
-                            FechaRegistro = reader.GetDateTime(5)
+                            FechaRegistro = reader.GetDateTime(5),
+                            EsAdmin = reader.GetBoolean(6)
                         };
                     }
                 }

@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions; // Importante para usar Regex
+using System.Text.RegularExpressions;
 
 namespace EcommerceBackend.Controllers
 {
@@ -10,22 +11,30 @@ namespace EcommerceBackend.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
+        private readonly JwtService _jwtService;
 
-        public UsuarioController(IUsuarioService usuarioService)
+        public UsuarioController(IUsuarioService usuarioService, JwtService jwtService)
         {
             _usuarioService = usuarioService;
+            _jwtService = jwtService;
         }
 
-        // Registro de usuario
+        // Registro de usuario con validación de email y contraseña segura
         [HttpPost("register")]
         public async Task<ActionResult<Usuario>> Register([FromBody] RegisterRequest request)
         {
             // Validar formato de email
-            // Patrón simple para correos: "algo@dominio.ext"
             var emailPattern = @"^[^\s@]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
             if (!Regex.IsMatch(request.Email, emailPattern))
             {
                 return BadRequest("El correo electrónico no es válido.");
+            }
+
+            // Validar contraseña segura (mínimo 8 caracteres, una mayúscula, un número y un carácter especial)
+            var passwordPattern = @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+            if (!Regex.IsMatch(request.Password, passwordPattern))
+            {
+                return BadRequest("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.");
             }
 
             // Verificar si el usuario ya existe
@@ -58,21 +67,9 @@ namespace EcommerceBackend.Controllers
             return CreatedAtAction(nameof(GetById), new { id = usuario.Id }, usuario);
         }
 
-        // Obtener un usuario por ID
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Usuario>> GetById(int id)
-        {
-            var usuario = await _usuarioService.GetByIdAsync(id);
-            if (usuario == null)
-            {
-                return NotFound("Usuario no encontrado.");
-            }
-            return Ok(usuario);
-        }
-
-        // Login del usuario
+        // Login del usuario con generación de JWT
         [HttpPost("login")]
-        public async Task<ActionResult<Usuario>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<object>> Login([FromBody] LoginRequest request)
         {
             var usuario = await _usuarioService.GetByEmailAsync(request.Email);
             if (usuario == null)
@@ -91,7 +88,31 @@ namespace EcommerceBackend.Controllers
                 }
             }
 
+            // Generar Token JWT
+            var token = _jwtService.GenerateToken(usuario.Id, usuario.Email, usuario.EsAdmin);
+
+            return Ok(new { Token = token });
+        }
+
+        // Obtener un usuario por ID (Protegido con JWT)
+        [Authorize]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Usuario>> GetById(int id)
+        {
+            var usuario = await _usuarioService.GetByIdAsync(id);
+            if (usuario == null)
+            {
+                return NotFound("Usuario no encontrado.");
+            }
             return Ok(usuario);
+        }
+
+        // Endpoint solo para administradores
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin-only")]
+        public IActionResult GetAdminData()
+        {
+            return Ok("Este es un endpoint solo para administradores.");
         }
     }
 
