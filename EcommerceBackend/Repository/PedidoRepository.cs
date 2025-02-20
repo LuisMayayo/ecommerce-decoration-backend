@@ -1,116 +1,36 @@
-using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using EcommerceBackend.Data;
+using EcommerceBackend.Models;
+using Microsoft.EntityFrameworkCore;
 
-public class PedidoRepository : IPedidoRepository
+namespace EcommerceBackend.Repositories
 {
-    private readonly string _connectionString;
-
-    public PedidoRepository(string connectionString)
+    public class PedidoRepository : IPedidoRepository
     {
-        _connectionString = connectionString;
-    }
+        private readonly EcommerceDbContext _context;
 
-    public async Task<Pedido> AddAsync(Pedido pedido)
-    {
-        if (pedido.UsuarioId <= 0 || pedido.Total <= 0)
+        public PedidoRepository(EcommerceDbContext context)
         {
-            throw new ArgumentException("Los datos del pedido son inválidos.");
+            _context = context;
         }
 
-        try
+        public async Task<Pedido> AddAsync(Pedido pedido)
         {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string query = "INSERT INTO Pedido (UsuarioId, FechaPedido, Total) VALUES (@UsuarioId, @FechaPedido, @Total); SELECT SCOPE_IDENTITY();";
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@UsuarioId", pedido.UsuarioId);
-                    command.Parameters.AddWithValue("@FechaPedido", pedido.FechaPedido);
-                    command.Parameters.AddWithValue("@Total", pedido.Total);
-
-                    pedido.Id = Convert.ToInt32(await command.ExecuteScalarAsync());
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new ApplicationException("Error al agregar el pedido", ex);
+            await _context.Pedidos.AddAsync(pedido);
+            await _context.SaveChangesAsync();
+            return pedido;
         }
 
-        return pedido;
-    }
-
-    public async Task<Pedido> GetByIdAsync(int id)
-    {
-        Pedido? pedido = null;
-
-        try
+        public async Task<Pedido> GetByIdAsync(int id)
         {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE Id = @Id";
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Id", id);
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        if (await reader.ReadAsync())
-                        {
-                            pedido = new Pedido
-                            {
-                                Id = reader.GetInt32(0),
-                                UsuarioId = reader.GetInt32(1),
-                                FechaPedido = reader.GetDateTime(2),
-                                Total = reader.GetDecimal(3)
-                            };
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new ApplicationException("Error al obtener el pedido", ex);
+            return await _context.Pedidos.FindAsync(id);
         }
 
-        return pedido;
-    }
-
-    public async Task<List<Pedido>> GetByUserIdAsync(int userId)
-    {
-        var pedidos = new List<Pedido>();
-
-        try
+        public async Task<List<Pedido>> GetByUserIdAsync(int userId)
         {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string query = "SELECT Id, UsuarioId, FechaPedido, Total FROM Pedido WHERE UsuarioId = @UsuarioId";
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@UsuarioId", userId);
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            pedidos.Add(new Pedido
-                            {
-                                Id = reader.GetInt32(0),
-                                UsuarioId = reader.GetInt32(1),
-                                FechaPedido = reader.GetDateTime(2),
-                                Total = reader.GetDecimal(3)
-                            });
-                        }
-                    }
-                }
-            }
+            return await _context.Pedidos.Where(p => p.UsuarioId == userId).ToListAsync();
         }
-        catch (Exception ex)
-        {
-            throw new ApplicationException("Error al obtener los pedidos del usuario", ex);
-        }
-
-        return pedidos;
     }
 }

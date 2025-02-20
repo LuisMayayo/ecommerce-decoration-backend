@@ -1,12 +1,16 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EcommerceBackend.Models;
 
-public interface IProductoService
+namespace EcommerceBackend.Services
 {
-    Task<List<ProductoDTO>> GetAllAsync();
-    Task<ProductoDTO?> GetByIdAsync(int id);
-    Task<List<ProductoDTO>> GetByCategoriaIdAsync(int categoriaId);
-    Task AddAsync(Producto producto);
-    Task UpdateAsync(Producto producto);
-    Task DeleteAsync(int id);
+    public interface IProductoService
+    {
+        Task<List<Producto>> GetAllAsync();
+        Task<Producto> GetByIdAsync(int id);
+        Task AddAsync(Producto producto);
+        Task UpdateAsync(Producto producto);
+        Task DeleteAsync(int id);
+        Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId);
+    }
 }

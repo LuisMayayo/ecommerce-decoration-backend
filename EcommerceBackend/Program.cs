@@ -1,33 +1,37 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
+using EcommerceBackend.Data;
+using EcommerceBackend.Repositories;
+using EcommerceBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de CORS
+// 1) Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")  // URL del frontend
+        policy.WithOrigins("http://localhost:5173") // Ajusta la URL del frontend si es necesario
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// Obtener la cadena de conexión desde appsettings.json
+// 2) Configurar cadena de conexión y DbContext
 string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<EcommerceDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
-// Registrar la cadena de conexión en el contenedor de dependencias
-builder.Services.AddSingleton(connectionString);
-
-// Configuración de autenticación con JWT
+// 3) Configurar autenticación JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new ArgumentNullException("Jwt:Key is missing"));
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -39,73 +43,127 @@ builder.Services
             ValidateAudience = true,
             ValidAudience = jwtSettings["Audience"],
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero  // Expiración exacta del token
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = ClaimTypes.Role // Reconoce el claim "role" como el rol del usuario
+        };
+
+        // Manejo de eventos para depurar y retornar mensajes personalizados
+        options.Events = new JwtBearerEvents
+        {
+            // Se llama cuando la autenticación falla por firma inválida, expiración, etc.
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+
+            // Se llama cuando no se presenta token o es inválido => 401
+            OnChallenge = context =>
+            {
+                // Evitar la respuesta por defecto
+                context.HandleResponse();
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var payload = new
+                {
+                    error = "No estás autorizado. Asegúrate de enviar un token válido en el header Authorization."
+                };
+
+                return context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+            },
+
+            // Se llama cuando el token es válido, pero el usuario no tiene el rol => 403
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+
+                var payload = new
+                {
+                    error = "Acceso denegado. No tienes los permisos necesarios (rol)."
+                };
+
+                return context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+            }
         };
     });
 
 builder.Services.AddAuthorization();
 
-// Servicios de la API
+// 4) Registrar controladores y configurar Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Configuración de Swagger
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Ecommerce API", Version = "v1" });
-
-    // Configuración para Swagger con JWT
-    var securityScheme = new OpenApiSecurityScheme
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
+        Title = "Ecommerce API",
+        Version = "v1",
+        Description = "API de Ecommerce con autenticación JWT"
+    });
+
+    // Definir el esquema de seguridad "Bearer"
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header usando Bearer. Ejemplo: \"Bearer {token}\"",
         Name = "Authorization",
-        Description = "Introduce el token con el prefijo Bearer. Ejemplo: Bearer {token}",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
         BearerFormat = "JWT"
-    };
+    });
 
-    var securityRequirement = new OpenApiSecurityRequirement
+    // Requerir el esquema de seguridad "Bearer"
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            securityScheme, new string[] { }
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
         }
-    };
-
-    c.AddSecurityDefinition("Bearer", securityScheme);
-    c.AddSecurityRequirement(securityRequirement);
+    });
 });
 
-// Registro de dependencias de repositorios y servicios
+// 5) Registrar repositorios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
-builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
-builder.Services.AddScoped<IReseñaRepository, ReseñaRepository>();
-builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
-
-builder.Services.AddScoped<IProductoService, ProductoService>();
-builder.Services.AddScoped<IPedidoService, PedidoService>();
-builder.Services.AddScoped<IReseñaService, ReseñaService>();
-builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
-
-// Agregar las dependencias de las categorías
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
-builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
+builder.Services.AddScoped<IReseñaRepository, ReseñaRepository>();
 
-// Registrar el servicio para generar tokens JWT
+// 6) Registrar servicios
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<IProductoService, ProductoService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IPedidoService, PedidoService>();
+builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
+builder.Services.AddScoped<IReseñaService, ReseñaService>();
+
+// 7) Registrar JwtService
 builder.Services.AddSingleton<JwtService>();
 
+// 8) Construir la aplicación
 var app = builder.Build();
 
-// Swagger para desarrollo
+// 9) Middlewares y configuración del pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// Usar CORS antes de la autorización
 app.UseCors("AllowLocalhost");
-
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,16 +1,20 @@
-public class DetallePedido
-{
-    public int Id { get; set; }
-    public int PedidoId { get; set; }
-    public int ProductoId { get; set; }
-    public int Cantidad { get; set; }
-    public decimal PrecioUnitario { get; set; }
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-    public void Validate()
+namespace EcommerceBackend.Models
+{
+    [Table("DetallePedido")]
+    public class DetallePedido
     {
-        if (Cantidad <= 0)
-            throw new ArgumentException("La cantidad debe ser mayor que 0.");
-        if (PrecioUnitario <= 0)
-            throw new ArgumentException("El precio unitario debe ser mayor que 0.");
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        public int PedidoId { get; set; }
+        public int ProductoId { get; set; }
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+
+        public Pedido? Pedido { get; set; }
+        public Producto? Producto { get; set; }
     }
 }

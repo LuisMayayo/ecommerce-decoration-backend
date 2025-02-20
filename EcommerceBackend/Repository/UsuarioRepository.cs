@@ -1,104 +1,49 @@
-using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using EcommerceBackend.Data;
+using EcommerceBackend.Models;
 
-public class UsuarioRepository : IUsuarioRepository
+namespace EcommerceBackend.Repositories
 {
-    private readonly string _connectionString;
-
-    public UsuarioRepository(string connectionString)
+    public class UsuarioRepository : IUsuarioRepository
     {
-        _connectionString = connectionString;
-    }
+        private readonly EcommerceDbContext _context;
 
-    public async Task<Usuario> AddAsync(Usuario usuario)
-    {
-        using (var connection = new SqlConnection(_connectionString))
+        public UsuarioRepository(EcommerceDbContext context)
         {
-            await connection.OpenAsync();
-            string query = @"
-                INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin) 
-                OUTPUT INSERTED.Id 
-                VALUES (@Nombre, @Email, @PasswordHash, @PasswordSalt, @FechaRegistro, @EsAdmin)";
-            
-            using (var command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Nombre", usuario.Nombre);
-                command.Parameters.AddWithValue("@Email", usuario.Email);
-                command.Parameters.AddWithValue("@PasswordHash", usuario.PasswordHash);
-                command.Parameters.AddWithValue("@PasswordSalt", usuario.PasswordSalt);
-                command.Parameters.AddWithValue("@FechaRegistro", usuario.FechaRegistro);
-                command.Parameters.AddWithValue("@EsAdmin", usuario.EsAdmin); 
-
-                // Recuperar el ID generado automáticamente
-                usuario.Id = (int)await command.ExecuteScalarAsync();
-            }
-        }
-        return usuario;
-    }
-
-    public async Task<Usuario> GetByIdAsync(int id)
-    {
-        Usuario? usuario = null;
-
-        using (var connection = new SqlConnection(_connectionString))
-        {
-            await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin FROM Usuario WHERE Id = @Id";
-            using (var command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Id", id);
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    if (await reader.ReadAsync())
-                    {
-                        usuario = new Usuario
-                        {
-                            Id = reader.GetInt32(0),
-                            Nombre = reader.GetString(1),
-                            Email = reader.GetString(2),
-                            PasswordHash = reader.GetString(3),
-                            PasswordSalt = reader.GetString(4),
-                            FechaRegistro = reader.GetDateTime(5),
-                            EsAdmin = reader.GetBoolean(6)
-                        };
-                    }
-                }
-            }
+            _context = context;
         }
 
-        return usuario;
-    }
-
-    public async Task<Usuario> GetByEmailAsync(string email)
-    {
-        Usuario? usuario = null;
-
-        using (var connection = new SqlConnection(_connectionString))
+        public async Task<Usuario> GetByIdAsync(int id)
         {
-            await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin FROM Usuario WHERE Email = @Email";
-            using (var command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Email", email);
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    if (await reader.ReadAsync())
-                    {
-                        usuario = new Usuario
-                        {
-                            Id = reader.GetInt32(0),
-                            Nombre = reader.GetString(1),
-                            Email = reader.GetString(2),
-                            PasswordHash = reader.GetString(3),
-                            PasswordSalt = reader.GetString(4),
-                            FechaRegistro = reader.GetDateTime(5),
-                            EsAdmin = reader.GetBoolean(6)
-                        };
-                    }
-                }
-            }
+            return await _context.Usuarios.FindAsync(id);
         }
 
-        return usuario;
+        public async Task<Usuario> GetByEmailAsync(string email)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task AddAsync(Usuario usuario)
+        {
+            await _context.Usuarios.AddAsync(usuario);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateAsync(Usuario usuario)
+        {
+            _context.Usuarios.Update(usuario);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var usuario = await GetByIdAsync(id);
+            if (usuario != null)
+            {
+                _context.Usuarios.Remove(usuario);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

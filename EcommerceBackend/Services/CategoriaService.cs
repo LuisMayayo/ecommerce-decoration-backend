@@ -1,20 +1,27 @@
-public class CategoriaService : ICategoriaService
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+using EcommerceBackend.Repositories;
+
+namespace EcommerceBackend.Services
 {
-    private readonly ICategoriaRepository _categoriaRepository;
-
-    public CategoriaService(ICategoriaRepository categoriaRepository)
+    public class CategoriaService : ICategoriaService
     {
-        _categoriaRepository = categoriaRepository;
+        private readonly ICategoriaRepository _categoriaRepository;
+
+        public CategoriaService(ICategoriaRepository categoriaRepository)
+        {
+            _categoriaRepository = categoriaRepository;
+        }
+
+        public async Task<List<Categoria>> GetAllAsync()
+        {
+            return await _categoriaRepository.GetAllAsync();
+        }
+
+        public async Task<Categoria> GetByIdAsync(int id)
+        {
+            return await _categoriaRepository.GetByIdAsync(id);
+        }
     }
-
-    public async Task<List<Categoria>> GetAllAsync()
-    {
-        return await _categoriaRepository.GetAllAsync();
-    }
-
-    public async Task<Categoria?> GetByIdAsync(int id) 
-{
-    return await _categoriaRepository.GetByIdAsync(id); 
-}
-
 }

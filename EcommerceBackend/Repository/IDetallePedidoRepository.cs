@@ -1,5 +1,12 @@
-public interface IDetallePedidoRepository
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+
+namespace EcommerceBackend.Repositories
 {
-    Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId);
-    Task AddAsync(DetallePedido detallePedido);
+    public interface IDetallePedidoRepository
+    {
+        Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId);
+        Task AddAsync(DetallePedido detallePedido);
+    }
 }

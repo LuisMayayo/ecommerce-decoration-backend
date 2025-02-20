@@ -1,35 +1,35 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EcommerceBackend.Models;
+using EcommerceBackend.Services;
 
-[Route("api/[controller]")]
-[ApiController]
-public class CategoriaController : ControllerBase
+namespace EcommerceBackend.Controllers
 {
-    private readonly ICategoriaService _categoriaService;
-
-    public CategoriaController(ICategoriaService categoriaService)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CategoriaController : ControllerBase
     {
-        _categoriaService = categoriaService;
-    }
+        private readonly ICategoriaService _categoriaService;
 
-    // Obtener todas las categorías
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Categoria>>> GetAll()
-    {
-        var categorias = await _categoriaService.GetAllAsync();
-        return Ok(categorias); 
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Categoria>> GetById(int id)
-    {
-        var categoria = await _categoriaService.GetByIdAsync(id);
-        if (categoria == null)
+        public CategoriaController(ICategoriaService categoriaService)
         {
-            return NotFound();
+            _categoriaService = categoriaService;
         }
-        return Ok(categoria);
-    }
 
+        [HttpGet]
+        public async Task<ActionResult<List<Categoria>>> GetAll()
+        {
+            var categorias = await _categoriaService.GetAllAsync();
+            return Ok(categorias);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Categoria>> GetById(int id)
+        {
+            var categoria = await _categoriaService.GetByIdAsync(id);
+            if (categoria == null) return NotFound();
+            return Ok(categoria);
+        }
+    }
 }

@@ -1,4 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+using EcommerceBackend.Services;
 
 namespace EcommerceBackend.Controllers
 {
@@ -13,19 +17,15 @@ namespace EcommerceBackend.Controllers
             _detallePedidoService = detallePedidoService;
         }
 
-        // Obtener los detalles de un pedido por ID de pedido
         [HttpGet("pedido/{pedidoId}")]
         public async Task<ActionResult<List<DetallePedido>>> GetByPedidoId(int pedidoId)
         {
             var detalles = await _detallePedidoService.GetByPedidoIdAsync(pedidoId);
             if (detalles == null || detalles.Count == 0)
-            {
                 return NotFound("No se encontraron detalles para este pedido.");
-            }
             return Ok(detalles);
         }
 
-        // Agregar un detalle a un pedido
         [HttpPost]
         public async Task<ActionResult<DetallePedido>> Create([FromBody] DetallePedido detallePedido)
         {

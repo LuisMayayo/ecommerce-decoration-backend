@@ -1,30 +1,41 @@
-public class UsuarioService : IUsuarioService
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+using EcommerceBackend.Repositories;
+
+namespace EcommerceBackend.Services
 {
-    private readonly IUsuarioRepository _usuarioRepository;
-
-    public UsuarioService(IUsuarioRepository usuarioRepository)
+    public class UsuarioService : IUsuarioService
     {
-        _usuarioRepository = usuarioRepository;
-    }
+        private readonly IUsuarioRepository _usuarioRepository;
 
-    public async Task<Usuario> AddAsync(Usuario usuario)
-    {
-        // Validaciones adicionales para el correo electrónico
-        if (string.IsNullOrWhiteSpace(usuario.Email))
+        public UsuarioService(IUsuarioRepository usuarioRepository)
         {
-            throw new ArgumentException("El correo electrónico no puede estar vacío.");
+            _usuarioRepository = usuarioRepository;
         }
 
-        return await _usuarioRepository.AddAsync(usuario);
-    }
+        public async Task<Usuario> GetByIdAsync(int id)
+        {
+            return await _usuarioRepository.GetByIdAsync(id);
+        }
 
-    public async Task<Usuario> GetByIdAsync(int id)
-    {
-        return await _usuarioRepository.GetByIdAsync(id);
-    }
+        public async Task<Usuario> GetByEmailAsync(string email)
+        {
+            return await _usuarioRepository.GetByEmailAsync(email);
+        }
 
-    public async Task<Usuario> GetByEmailAsync(string email)
-    {
-        return await _usuarioRepository.GetByEmailAsync(email);
+        public async Task AddAsync(Usuario usuario)
+        {
+            await _usuarioRepository.AddAsync(usuario);
+        }
+
+        public async Task UpdateAsync(Usuario usuario)
+        {
+            await _usuarioRepository.UpdateAsync(usuario);
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            await _usuarioRepository.DeleteAsync(id);
+        }
     }
 }

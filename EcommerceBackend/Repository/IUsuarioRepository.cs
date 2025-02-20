@@ -1,6 +1,14 @@
-public interface IUsuarioRepository
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+
+namespace EcommerceBackend.Repositories
 {
-    Task<Usuario> AddAsync(Usuario usuario);
-    Task<Usuario> GetByIdAsync(int id);
-    Task<Usuario> GetByEmailAsync(string email);
+    public interface IUsuarioRepository
+    {
+        Task<Usuario> GetByIdAsync(int id);
+        Task<Usuario> GetByEmailAsync(string email);
+        Task AddAsync(Usuario usuario);
+        Task UpdateAsync(Usuario usuario);
+        Task DeleteAsync(int id);
+    }
 }

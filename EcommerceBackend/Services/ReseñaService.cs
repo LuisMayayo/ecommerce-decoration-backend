@@ -1,19 +1,27 @@
-public class ReseñaService : IReseñaService
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+using EcommerceBackend.Repositories;
+
+namespace EcommerceBackend.Services
 {
-    private readonly IReseñaRepository _reseñaRepository;
-
-    public ReseñaService(IReseñaRepository reseñaRepository)
+    public class ReseñaService : IReseñaService
     {
-        _reseñaRepository = reseñaRepository;
-    }
+        private readonly IReseñaRepository _reseñaRepository;
 
-    public async Task<Reseña> AddAsync(Reseña reseña)
-    {
-        return await _reseñaRepository.AddAsync(reseña);
-    }
+        public ReseñaService(IReseñaRepository reseñaRepository)
+        {
+            _reseñaRepository = reseñaRepository;
+        }
 
-    public async Task<List<Reseña>> GetByProductoIdAsync(int productoId)
-    {
-        return await _reseñaRepository.GetByProductoIdAsync(productoId);
+        public async Task<Reseña> AddAsync(Reseña reseña)
+        {
+            return await _reseñaRepository.AddAsync(reseña);
+        }
+
+        public async Task<List<Reseña>> GetByProductoIdAsync(int productoId)
+        {
+            return await _reseñaRepository.GetByProductoIdAsync(productoId);
+        }
     }
 }

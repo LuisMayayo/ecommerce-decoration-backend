@@ -1,25 +1,27 @@
-public class DetallePedidoService : IDetallePedidoService
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+using EcommerceBackend.Repositories;
+
+namespace EcommerceBackend.Services
 {
-    private readonly IDetallePedidoRepository _detallePedidoRepository;
-
-    public DetallePedidoService(IDetallePedidoRepository detallePedidoRepository)
+    public class DetallePedidoService : IDetallePedidoService
     {
-        _detallePedidoRepository = detallePedidoRepository;
-    }
+        private readonly IDetallePedidoRepository _detallePedidoRepository;
 
-    public async Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId)
-    {
-        return await _detallePedidoRepository.GetByPedidoIdAsync(pedidoId);
-    }
-
-    public async Task AddAsync(DetallePedido detallePedido)
-    {
-        // Validaciones adicionales si es necesario
-        if (detallePedido.Cantidad <= 0)
+        public DetallePedidoService(IDetallePedidoRepository detallePedidoRepository)
         {
-            throw new ArgumentException("La cantidad debe ser mayor que 0.");
+            _detallePedidoRepository = detallePedidoRepository;
         }
 
-        await _detallePedidoRepository.AddAsync(detallePedido);
+        public async Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId)
+        {
+            return await _detallePedidoRepository.GetByPedidoIdAsync(pedidoId);
+        }
+
+        public async Task AddAsync(DetallePedido detallePedido)
+        {
+            await _detallePedidoRepository.AddAsync(detallePedido);
+        }
     }
 }

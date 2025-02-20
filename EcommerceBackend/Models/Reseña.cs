@@ -1,14 +1,20 @@
-public class Reseña
-{
-    public int Id { get; set; }
-    public int ProductoId { get; set; }
-    public int UsuarioId { get; set; }
-    public string Comentario { get; set; } = string.Empty;
-    public int Calificacion { get; set; }
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-    public void Validate()
+namespace EcommerceBackend.Models
+{
+    [Table("Reseña")]
+    public class Reseña
     {
-        if (Calificacion < 1 || Calificacion > 5)
-            throw new ArgumentException("La calificación debe ser entre 1 y 5.");
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        public int ProductoId { get; set; }
+        public int UsuarioId { get; set; }
+        public string Comentario { get; set; } = string.Empty;
+        public int Calificacion { get; set; }
+
+        public Producto? Producto { get; set; }
+        public Usuario? Usuario { get; set; }
     }
 }

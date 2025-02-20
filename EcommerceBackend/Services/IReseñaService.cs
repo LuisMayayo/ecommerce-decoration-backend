@@ -1,5 +1,12 @@
-public interface IReseñaService
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+
+namespace EcommerceBackend.Services
 {
-    Task<Reseña> AddAsync(Reseña reseña);
-    Task<List<Reseña>> GetByProductoIdAsync(int productoId);  // Obtener reseñas por producto
+    public interface IReseñaService
+    {
+        Task<Reseña> AddAsync(Reseña reseña);
+        Task<List<Reseña>> GetByProductoIdAsync(int productoId);
+    }
 }

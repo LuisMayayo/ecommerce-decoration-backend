@@ -1,16 +1,24 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class Usuario
+namespace EcommerceBackend.Models
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]  // Indica que es autoincremental
-    public int Id { get; set; }
+    [Table("Usuario")]
+    public class Usuario
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public string PasswordSalt { get; set; } = string.Empty;
+        public DateTime FechaRegistro { get; set; }
+        public bool EsAdmin { get; set; }
 
-    public string Nombre { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
-    public string PasswordSalt { get; set; } = string.Empty;
-    public DateTime FechaRegistro { get; set; }
-    public bool EsAdmin { get; set; }
+        public ICollection<Pedido>? Pedidos { get; set; }
+        public ICollection<Reseña>? Reseñas { get; set; }
+    }
 }

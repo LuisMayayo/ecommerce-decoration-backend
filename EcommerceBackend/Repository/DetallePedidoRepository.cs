@@ -1,74 +1,30 @@
-using Microsoft.Data.SqlClient;
-public class DetallePedidoRepository : IDetallePedidoRepository
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using EcommerceBackend.Data;
+using EcommerceBackend.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace EcommerceBackend.Repositories
 {
-    private readonly string _connectionString;
-
-    public DetallePedidoRepository(string connectionString)
+    public class DetallePedidoRepository : IDetallePedidoRepository
     {
-        _connectionString = connectionString;
-    }
+        private readonly EcommerceDbContext _context;
 
-    public async Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId)
-    {
-        var detalles = new List<DetallePedido>();
-
-        try
+        public DetallePedidoRepository(EcommerceDbContext context)
         {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string query = "SELECT Id, PedidoId, ProductoId, Cantidad, PrecioUnitario FROM DetallePedido WHERE PedidoId = @PedidoId";
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@PedidoId", pedidoId);
-                    using (var reader = await command.ExecuteReaderAsync())
-                    {
-                        while (await reader.ReadAsync())
-                        {
-                            detalles.Add(new DetallePedido
-                            {
-                                Id = reader.GetInt32(0),
-                                PedidoId = reader.GetInt32(1),
-                                ProductoId = reader.GetInt32(2),
-                                Cantidad = reader.GetInt32(3),
-                                PrecioUnitario = reader.GetDecimal(4)
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Manejo de excepciones
-            throw new ApplicationException("Error al obtener los detalles del pedido", ex);
+            _context = context;
         }
 
-        return detalles;
-    }
-
-    public async Task AddAsync(DetallePedido detallePedido)
-    {
-        try
+        public async Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId)
         {
-            using (var connection = new SqlConnection(_connectionString))
-            {
-                await connection.OpenAsync();
-                string query = "INSERT INTO DetallePedido (PedidoId, ProductoId, Cantidad, PrecioUnitario) VALUES (@PedidoId, @ProductoId, @Cantidad, @PrecioUnitario)";
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@PedidoId", detallePedido.PedidoId);
-                    command.Parameters.AddWithValue("@ProductoId", detallePedido.ProductoId);
-                    command.Parameters.AddWithValue("@Cantidad", detallePedido.Cantidad);
-                    command.Parameters.AddWithValue("@PrecioUnitario", detallePedido.PrecioUnitario);
-                    await command.ExecuteNonQueryAsync();
-                }
-            }
+            return await _context.DetallesPedido.Where(d => d.PedidoId == pedidoId).ToListAsync();
         }
-        catch (Exception ex)
+
+        public async Task AddAsync(DetallePedido detallePedido)
         {
-            // Manejo de excepciones
-            throw new ApplicationException("Error al agregar el detalle del pedido", ex);
+            await _context.DetallesPedido.AddAsync(detallePedido);
+            await _context.SaveChangesAsync();
         }
     }
 }

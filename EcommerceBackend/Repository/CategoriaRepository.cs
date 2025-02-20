@@ -1,73 +1,28 @@
-using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using EcommerceBackend.Data;
+using EcommerceBackend.Models;
 
-public class CategoriaRepository : ICategoriaRepository
+namespace EcommerceBackend.Repositories
 {
-    private readonly string _connectionString;
-
-    public CategoriaRepository(string connectionString)
+    public class CategoriaRepository : ICategoriaRepository
     {
-        _connectionString = connectionString;
-    }
+        private readonly EcommerceDbContext _context;
 
-    public async Task<List<Categoria>> GetAllAsync()
-    {
-        var categorias = new List<Categoria>();
-
-        using (var connection = new SqlConnection(_connectionString))
+        public CategoriaRepository(EcommerceDbContext context)
         {
-            await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Descripcion, UrlImagen FROM Categoria"; 
-            using (var command = new SqlCommand(query, connection))
-            {
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        categorias.Add(new Categoria
-                        {
-                            Id = reader.GetInt32(0),
-                            Nombre = reader.GetString(1),
-                            Descripcion = reader.GetString(2),
-                            UrlImagen = reader.GetString(3) 
-                        });
-                    }
-                }
-            }
+            _context = context;
         }
 
-        return categorias;
-    }
-
-    public async Task<Categoria?> GetByIdAsync(int id)
-    {
-        Categoria? categoria = null;
-
-        using (var connection = new SqlConnection(_connectionString))
+        public async Task<List<Categoria>> GetAllAsync()
         {
-            await connection.OpenAsync();
-            string query = "SELECT Id, Nombre, Descripcion, UrlImagen FROM Categoria WHERE Id = @Id";
-            using (var command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Id", id);
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    if (await reader.ReadAsync())
-                    {
-                        categoria = new Categoria
-                        {
-                            Id = reader.GetInt32(0),
-                            Nombre = reader.GetString(1),
-                            Descripcion = reader.GetString(2),
-                            UrlImagen = reader.GetString(3) 
-                        };
-                    }
-                }
-            }
+            return await _context.Categorias.ToListAsync();
         }
 
-        return categoria;
+        public async Task<Categoria> GetByIdAsync(int id)
+        {
+            return await _context.Categorias.FindAsync(id);
+        }
     }
 }
-

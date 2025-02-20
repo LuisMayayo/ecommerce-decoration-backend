@@ -1,5 +1,12 @@
-public interface ICategoriaRepository
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EcommerceBackend.Models;
+
+namespace EcommerceBackend.Repositories
 {
-    Task<List<Categoria>> GetAllAsync();
-    Task<Categoria?> GetByIdAsync(int id);
+    public interface ICategoriaRepository
+    {
+        Task<List<Categoria>> GetAllAsync();
+        Task<Categoria> GetByIdAsync(int id);
+    }
 }
