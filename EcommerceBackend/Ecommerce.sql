@@ -2,9 +2,9 @@
 -- 0) CREAR BASE DE DATOS Y USARLA
 -------------------------------------------------------------------------------
 CREATE DATABASE EcommerceDB;
-GO
+
 USE EcommerceDB;
-GO
+
 
 -------------------------------------------------------------------------------
 -- 1) TABLA USUARIO (con EsAdmin para distinguir roles)
