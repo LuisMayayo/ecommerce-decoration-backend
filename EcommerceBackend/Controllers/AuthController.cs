@@ -6,6 +6,8 @@ using EcommerceBackend.Models;
 using EcommerceBackend.DTOs;
 using EcommerceBackend.Services;
 using System.IdentityModel.Tokens.Jwt;
+using Google.Apis.Auth;
+
 
 namespace EcommerceBackend.Controllers
 {
@@ -15,11 +17,13 @@ namespace EcommerceBackend.Controllers
     {
         private readonly IUsuarioService _usuarioService;
         private readonly JwtService _jwtService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IUsuarioService usuarioService, JwtService jwtService)
+        public AuthController(IUsuarioService usuarioService, JwtService jwtService, IEmailService emailService)
         {
             _usuarioService = usuarioService;
             _jwtService = jwtService;
+            _emailService = emailService;
         }
 
         [HttpPost("register")]
@@ -81,6 +85,71 @@ namespace EcommerceBackend.Controllers
             var token = _jwtService.GenerateToken(usuario.Id, usuario.Email, usuario.EsAdmin);
             return Ok(new { Token = token });
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            var usuario = await _usuarioService.GetByEmailAsync(request.Email);
+            if (usuario == null)
+                return Ok("Si el correo existe, se enviará un enlace para restablecer la contraseña.");
+
+            var resetToken = Guid.NewGuid().ToString();
+            var resetLink = $"http://localhost:5173/reset-password?token={resetToken}";
+            var subject = "Restablecer contraseña";
+            var body = $"Hola {usuario.Nombre},\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n{resetLink}\n\nSi no solicitaste esto, ignora este mensaje.";
+            await _emailService.SendEmailAsync(usuario.Email, subject, body);
+
+            return Ok("Se envió un enlace para restablecer la contraseña (si el correo existe).");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var passwordPattern = @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+            if (!Regex.IsMatch(request.NewPassword, passwordPattern))
+                return BadRequest("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.");
+
+            return Ok("Contraseña restablecida exitosamente. (Simulación)");
+        }
+
+        [HttpPost("google-login")]
+        public async Task<ActionResult<object>> GoogleLogin([FromBody] GoogleLoginRequest request)
+        {
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(
+                    request.IdToken,
+                    new GoogleJsonWebSignature.ValidationSettings()
+                );
+                if (payload == null)
+                    return Unauthorized("Token de Google inválido.");
+
+                var usuario = await _usuarioService.GetByEmailAsync(payload.Email);
+                if (usuario == null)
+                {
+                    usuario = new Usuario
+                    {
+                        Nombre = payload.Name ?? "Usuario Google",
+                        Email = payload.Email,
+                        FechaRegistro = DateTime.UtcNow
+                    };
+                    await _usuarioService.AddAsync(usuario);
+                }
+
+                var token = _jwtService.GenerateToken(usuario.Id, usuario.Email, usuario.EsAdmin);
+                return Ok(new { Token = token });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized("Error al validar token de Google: " + ex.Message);
+            }
+        }
+
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string token)
+        {
+            return Ok("Cuenta confirmada exitosamente (Simulación).");
+        }
     }
 
     public class RegisterRequest
@@ -94,5 +163,21 @@ namespace EcommerceBackend.Controllers
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+    }
+
+    public class ForgotPasswordRequest
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class ResetPasswordRequest
+    {
+        public string Token { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
+
+    public class GoogleLoginRequest
+    {
+        public string IdToken { get; set; } = string.Empty;
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using EcommerceBackend.Data;
@@ -44,6 +45,12 @@ namespace EcommerceBackend.Repositories
                 _context.Usuarios.Remove(usuario);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        // Método para obtener todos los usuarios
+        public async Task<List<Usuario>> GetAllAsync()
+        {
+            return await _context.Usuarios.ToListAsync();
         }
     }
 }

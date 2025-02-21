@@ -8,6 +8,7 @@ using System.Text.Json;
 using EcommerceBackend.Data;
 using EcommerceBackend.Repositories;
 using EcommerceBackend.Services;
+using EcommerceBackend.Models; // Para EmailSettings
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,19 +51,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         // Manejo de eventos para depurar y retornar mensajes personalizados
         options.Events = new JwtBearerEvents
         {
-            // Se llama cuando la autenticación falla por firma inválida, expiración, etc.
             OnAuthenticationFailed = context =>
             {
                 Console.WriteLine("Authentication failed: " + context.Exception.Message);
                 return Task.CompletedTask;
             },
-
-            // Se llama cuando no se presenta token o es inválido => 401
             OnChallenge = context =>
             {
-                // Evitar la respuesta por defecto
                 context.HandleResponse();
-
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 context.Response.ContentType = "application/json";
 
@@ -73,8 +69,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
                 return context.Response.WriteAsync(JsonSerializer.Serialize(payload));
             },
-
-            // Se llama cuando el token es válido, pero el usuario no tiene el rol => 403
             OnForbidden = context =>
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -95,8 +89,6 @@ builder.Services.AddAuthorization();
 // 4) Registrar controladores y configurar Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-// Configuración de Swagger
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -150,13 +142,17 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
 builder.Services.AddScoped<IReseñaService, ReseñaService>();
 
-// 7) Registrar JwtService
+// 7) Registrar EmailSettings y EmailService
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+// 8) Registrar JwtService
 builder.Services.AddSingleton<JwtService>();
 
-// 8) Construir la aplicación
+// 9) Construir la aplicación
 var app = builder.Build();
 
-// 9) Middlewares y configuración del pipeline
+// 10) Middlewares y configuración del pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using EcommerceBackend.Models;
 
@@ -10,5 +11,7 @@ namespace EcommerceBackend.Services
         Task AddAsync(Usuario usuario);
         Task UpdateAsync(Usuario usuario);
         Task DeleteAsync(int id);
+        // Agrega este método para obtener todos los usuarios
+        Task<List<Usuario>> GetAllAsync();
     }
 }

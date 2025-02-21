@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using EcommerceBackend.Models;
 using EcommerceBackend.Repositories;
@@ -36,6 +37,11 @@ namespace EcommerceBackend.Services
         public async Task DeleteAsync(int id)
         {
             await _usuarioRepository.DeleteAsync(id);
+        }
+
+        public async Task<List<Usuario>> GetAllAsync()
+        {
+            return await _usuarioRepository.GetAllAsync();
         }
     }
 }

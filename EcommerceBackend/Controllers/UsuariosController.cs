@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 using EcommerceBackend.Models;
 using EcommerceBackend.DTOs;
 using EcommerceBackend.Services;
@@ -29,6 +30,15 @@ namespace EcommerceBackend.Controllers
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
             return Ok(usuario.ToDto());
+        }
+
+        // Nuevo método para obtener todos los usuarios
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAll()
+        {
+            var usuarios = await _usuarioService.GetAllAsync();
+            var dtos = usuarios.Select(u => u.ToDto());
+            return Ok(dtos);
         }
 
         [HttpPut("{id}")]
