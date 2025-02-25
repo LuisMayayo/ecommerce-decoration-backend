@@ -43,5 +43,11 @@ namespace EcommerceBackend.Services
         {
             return await _productoRepository.GetByCategoriaIdAsync(categoriaId);
         }
+
+        // Nuevo método para buscar productos por nombre
+        public async Task<List<Producto>> SearchByNameAsync(string query)
+        {
+            return await _productoRepository.SearchByNameAsync(query);
+        }
     }
 }

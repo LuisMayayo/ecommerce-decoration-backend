@@ -12,5 +12,7 @@ namespace EcommerceBackend.Repositories
         Task UpdateAsync(Producto producto);
         Task DeleteAsync(int id);
         Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId);
+        // Nuevo método para buscar productos por nombre
+        Task<List<Producto>> SearchByNameAsync(string query);
     }
 }

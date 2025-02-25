@@ -43,6 +43,15 @@ namespace EcommerceBackend.Controllers
             return Ok(dtos);
         }
 
+        // Nuevo endpoint para filtrar por nombre de producto
+        [HttpGet("search")]
+        public async Task<ActionResult<List<ProductoDto>>> SearchByName([FromQuery] string query)
+        {
+            var productos = await _productoService.SearchByNameAsync(query);
+            var dtos = productos.ConvertAll(p => p.ToDto());
+            return Ok(dtos);
+        }
+
         [HttpPost]
         public async Task<ActionResult<ProductoDto>> Create([FromBody] Producto producto)
         {

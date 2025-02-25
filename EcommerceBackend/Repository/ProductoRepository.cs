@@ -52,5 +52,22 @@ namespace EcommerceBackend.Repositories
         {
             return await _context.Productos.Where(p => p.CategoriaId == categoriaId).ToListAsync();
         }
+
+        // Método modificado para filtrar por palabras en el nombre del producto
+        public async Task<List<Producto>> SearchByNameAsync(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return await GetAllAsync();
+            }
+
+            var words = query.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)
+                             .Select(word => word.ToLower())
+                             .ToArray();
+
+            return await _context.Productos
+                .Where(p => words.Any(word => p.Nombre.ToLower().Contains(word)))
+                .ToListAsync();
+        }
     }
 }
