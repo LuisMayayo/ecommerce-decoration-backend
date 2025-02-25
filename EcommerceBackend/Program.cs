@@ -45,7 +45,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtSettings["Audience"],
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-            RoleClaimType = ClaimTypes.Role // Reconoce el claim "role" como el rol del usuario
+            // Asegura que se reconozca el claim "role" (el que se asigna en JwtService)
+            RoleClaimType = "role" 
         };
 
         // Manejo de eventos para depurar y retornar mensajes personalizados
@@ -101,7 +102,7 @@ builder.Services.AddSwaggerGen(c =>
     // Definir el esquema de seguridad "Bearer"
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header usando Bearer. Ejemplo: \"Bearer {token}\"",
+        Description = "Introduce el token en el siguiente formato: Bearer {token}",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -109,7 +110,7 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT"
     });
 
-    // Requerir el esquema de seguridad "Bearer"
+    // Hacer que todas las peticiones usen el esquema "Bearer" por defecto
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -121,7 +122,7 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<string>()
+            new List<string>()
         }
     });
 });
@@ -146,7 +147,7 @@ builder.Services.AddScoped<IReseñaService, ReseñaService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// 8) Registrar JwtService
+// 8) Registrar JwtService (asegúrate de que esté configurado para generar el token con los claims correctos)
 builder.Services.AddSingleton<JwtService>();
 
 // 9) Construir la aplicación
