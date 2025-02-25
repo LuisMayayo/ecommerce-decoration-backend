@@ -24,22 +24,21 @@ namespace EcommerceBackend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UsuarioDto>> GetById(int id)
+        public async Task<ActionResult<Usuario>> GetById(int id)
         {
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
-            return Ok(usuario.ToDto());
+            return Ok(usuario);
         }
 
-        // Nuevo método para obtener todos los usuarios
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Usuario>>> GetAll()
         {
             var usuarios = await _usuarioService.GetAllAsync();
-            var dtos = usuarios.Select(u => u.ToDto());
-            return Ok(dtos);
+            return Ok(usuarios);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
@@ -54,6 +53,8 @@ namespace EcommerceBackend.Controllers
 
             usuario.Nombre = !string.IsNullOrEmpty(request.Nombre) ? request.Nombre : usuario.Nombre;
             usuario.Email = !string.IsNullOrEmpty(request.Email) ? request.Email : usuario.Email;
+            usuario.Telefono = !string.IsNullOrEmpty(request.Telefono) ? request.Telefono : usuario.Telefono;
+            usuario.Direccion = !string.IsNullOrEmpty(request.Direccion) ? request.Direccion : usuario.Direccion;
 
             if (!string.IsNullOrEmpty(request.Password))
             {
@@ -96,5 +97,7 @@ namespace EcommerceBackend.Controllers
         public string? Nombre { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
     }
 }
