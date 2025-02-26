@@ -41,5 +41,12 @@ namespace EcommerceBackend.Controllers
             var newPedido = await _pedidoService.AddAsync(pedido);
             return CreatedAtAction(nameof(GetById), new { id = newPedido.Id }, newPedido);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _pedidoService.DeleteAsync(id);
+            return NoContent();
+        }
     }
 }

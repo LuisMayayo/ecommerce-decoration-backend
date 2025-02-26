@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using EcommerceBackend.Models;
 using EcommerceBackend.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace EcommerceBackend.Services
 {
@@ -14,9 +14,9 @@ namespace EcommerceBackend.Services
             _pedidoRepository = pedidoRepository;
         }
 
-        public async Task<Pedido> AddAsync(Pedido pedido)
+        public async Task<List<Pedido>> GetByUserIdAsync(int userId)
         {
-            return await _pedidoRepository.AddAsync(pedido);
+            return await _pedidoRepository.GetByUserIdAsync(userId);
         }
 
         public async Task<Pedido> GetByIdAsync(int id)
@@ -24,9 +24,14 @@ namespace EcommerceBackend.Services
             return await _pedidoRepository.GetByIdAsync(id);
         }
 
-        public async Task<List<Pedido>> GetByUserIdAsync(int userId)
+        public async Task<Pedido> AddAsync(Pedido pedido)
         {
-            return await _pedidoRepository.GetByUserIdAsync(userId);
+            return await _pedidoRepository.AddAsync(pedido);
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            await _pedidoRepository.DeleteAsync(id);
         }
     }
 }
