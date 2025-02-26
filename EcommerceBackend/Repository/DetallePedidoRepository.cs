@@ -16,30 +16,47 @@ namespace EcommerceBackend.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Obtener detalles de un pedido por su ID.
+        /// Incluye información del producto y la categoría.
+        /// </summary>
         public async Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId)
         {
-            return await _context.DetallePedido // 👈 Asegura que el nombre coincide
+            return await _context.DetallesPedido // 🔹 Corregido (Plural)
+                .Include(d => d.Producto)        // 🔹 Cargar información del producto
+                    .ThenInclude(p => p.Categoria) // 🔹 Cargar categoría del producto
                 .Where(d => d.PedidoId == pedidoId)
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtener un detalle de pedido por su ID.
+        /// </summary>
         public async Task<DetallePedido> GetByIdAsync(int id)
         {
-            return await _context.DetallePedido.FindAsync(id); // 👈 Aquí también
+            return await _context.DetallesPedido // 🔹 Corregido (Plural)
+                .Include(d => d.Producto)
+                .FirstOrDefaultAsync(d => d.Id == id);
         }
 
+        /// <summary>
+        /// Agregar un nuevo detalle de pedido.
+        /// </summary>
         public async Task AddAsync(DetallePedido detallePedido)
         {
-            _context.DetallePedido.Add(detallePedido); // 👈 Corregido
+            _context.DetallesPedido.Add(detallePedido); // 🔹 Corregido (Plural)
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Eliminar un detalle de pedido por su ID.
+        /// </summary>
         public async Task DeleteAsync(int id)
         {
-            var detalle = await _context.DetallePedido.FindAsync(id);
+            var detalle = await _context.DetallesPedido.FindAsync(id); // 🔹 Corregido (Plural)
             if (detalle != null)
             {
-                _context.DetallePedido.Remove(detalle);
+                _context.DetallesPedido.Remove(detalle); // 🔹 Corregido (Plural)
                 await _context.SaveChangesAsync();
             }
         }

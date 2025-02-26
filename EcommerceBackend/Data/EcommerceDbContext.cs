@@ -11,19 +11,19 @@ namespace EcommerceBackend.Data
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
-        public DbSet<DetallePedido> DetallePedido { get; set; } // 👈 Nombre correcto (sin "s")
+        public DbSet<DetallePedido> DetallesPedido { get; set; } // Corregido nombre de la colección
         public DbSet<Reseña> Reseñas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<DetallePedido>().ToTable("DetallePedido"); // 👈 Asegura el nombre correcto
+            modelBuilder.Entity<DetallePedido>().ToTable("DetallePedido");
             modelBuilder.Entity<Pedido>().ToTable("Pedido");
             modelBuilder.Entity<Usuario>().ToTable("Usuario");
             modelBuilder.Entity<Producto>().ToTable("Producto");
             modelBuilder.Entity<Categoria>().ToTable("Categoria");
             modelBuilder.Entity<Reseña>().ToTable("Reseña");
 
-            // Precisión decimal para precios
+            // Definir precision decimal para evitar errores de redondeo
             modelBuilder.Entity<DetallePedido>()
                 .Property(d => d.PrecioUnitario)
                 .HasColumnType("decimal(18,2)");
@@ -39,5 +39,4 @@ namespace EcommerceBackend.Data
             base.OnModelCreating(modelBuilder);
         }
     }
-
 }
