@@ -7,7 +7,7 @@ USE EcommerceDB;
 
 
 -------------------------------------------------------------------------------
--- 1) TABLA USUARIO (con EsAdmin para distinguir roles)
+-- 1) TABLA USUARIO (con EsAdmin para distinguir roles y nuevos campos)
 -------------------------------------------------------------------------------
 CREATE TABLE Usuario (
     Id INT IDENTITY(1,1) PRIMARY KEY,
@@ -16,16 +16,18 @@ CREATE TABLE Usuario (
     PasswordHash NVARCHAR(255) NOT NULL,
     PasswordSalt NVARCHAR(255) NOT NULL,
     FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
-    EsAdmin BIT NOT NULL DEFAULT 0
+    EsAdmin BIT NOT NULL DEFAULT 0,
+    Telefono NVARCHAR(20) NULL,
+    Direccion NVARCHAR(255) NULL
 );
 
 -------------------------------------------------------------------------------
 -- 2) INSERTAR USUARIOS DE EJEMPLO
 -------------------------------------------------------------------------------
-INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin)
+INSERT INTO Usuario (Nombre, Email, PasswordHash, PasswordSalt, FechaRegistro, EsAdmin, Telefono, Direccion)
 VALUES
-    ('Admin Local', 'admin@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 1),
-    ('Usuario Normal', 'user@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 0);
+    ('Admin Local', 'admin@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 1, '666111222', 'Calle Falsa 123, Ciudad'),
+    ('Usuario Normal', 'user@correo.com', 'INSERT-HASH-BASE64', 'INSERT-SALT-BASE64', GETDATE(), 0, '655222333', 'Avenida Siempre Viva 742, Springfield');
 
 -------------------------------------------------------------------------------
 -- 3) TABLA CATEGORIA

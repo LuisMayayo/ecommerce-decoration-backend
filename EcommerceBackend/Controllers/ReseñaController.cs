@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EcommerceBackend.Models;
@@ -21,16 +22,45 @@ namespace EcommerceBackend.Controllers
         public async Task<ActionResult<List<Reseña>>> GetByProductoId(int productoId)
         {
             var reseñas = await _reseñaService.GetByProductoIdAsync(productoId);
-            if (reseñas == null || reseñas.Count == 0)
-                return NotFound("No se encontraron reseñas para este producto.");
             return Ok(reseñas);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Reseña>> Create([FromBody] Reseña reseña)
+        [HttpGet("producto/{productoId}/promedio")]
+        public async Task<ActionResult<double>> GetPromedioCalificacion(int productoId)
         {
-            var newReseña = await _reseñaService.AddAsync(reseña);
-            return CreatedAtAction(nameof(GetByProductoId), new { productoId = newReseña.ProductoId }, newReseña);
+            try
+            {
+                var promedio = await _reseñaService.GetPromedioCalificacionAsync(productoId);
+                return Ok(promedio);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error al obtener el promedio de calificación: {ex.Message}");
+                return StatusCode(500, $"Error interno al calcular el promedio: {ex.Message}");
+            }
+        }
+
+
+
+        [Authorize]
+        [HttpPost]
+        public async Task<ActionResult<Reseña>> AddReseña([FromBody] Reseña reseña)
+        {
+            if (reseña == null || reseña.UsuarioId <= 0)
+            {
+                return BadRequest("Datos de reseña inválidos.");
+            }
+
+            await _reseñaService.AddAsync(reseña);
+            return Ok(reseña);
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteReseña(int id)
+        {
+            await _reseñaService.DeleteAsync(id);
+            return NoContent();
         }
     }
 }

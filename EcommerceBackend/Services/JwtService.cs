@@ -4,6 +4,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Collections.Generic;
 
 namespace EcommerceBackend.Services
 {
@@ -22,13 +23,15 @@ namespace EcommerceBackend.Services
 
         public string GenerateToken(int userId, string email, bool esAdmin)
         {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, email),
-                new Claim(ClaimTypes.Role, esAdmin ? "Admin" : "User"),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+            var claims = new List<Claim>
+{
+    new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),  // ID del usuario
+    new Claim(JwtRegisteredClaimNames.Email, email),  // Email del usuario
+    new Claim("role", esAdmin ? "Admin" : "User"), // Claim de rol (nombre estándar)
+    new Claim(ClaimTypes.Role, esAdmin ? "Admin" : "User"), // Claim alternativo
+    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Identificador único del token
+};
+
 
             var keyBytes = Encoding.UTF8.GetBytes(_key);
             var signingKey = new SymmetricSecurityKey(keyBytes);

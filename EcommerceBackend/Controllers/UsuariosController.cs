@@ -3,17 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
-using System.Linq;
 using EcommerceBackend.Models;
 using EcommerceBackend.DTOs;
 using EcommerceBackend.Services;
-using EcommerceBackend.Extensions;
+using System.Security.Claims;
 
 namespace EcommerceBackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class UsuarioController : ControllerBase
     {
         private readonly IUsuarioService _usuarioService;
@@ -24,36 +22,65 @@ namespace EcommerceBackend.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UsuarioDto>> GetById(int id)
+        public async Task<ActionResult<Usuario>> GetById(int id)
         {
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
-            return Ok(usuario.ToDto());
+
+            return Ok(usuario);
         }
 
-        // Nuevo método para obtener todos los usuarios
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Usuario>>> GetAll()
         {
             var usuarios = await _usuarioService.GetAllAsync();
-            var dtos = usuarios.Select(u => u.ToDto());
-            return Ok(dtos);
+            return Ok(usuarios);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
+            Console.WriteLine("🔍 Verificando autenticación...");
+
+            if (User.Identity is not null && User.Identity.IsAuthenticated)
+            {
+                Console.WriteLine("✅ Usuario autenticado.");
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"🔹 Claim: {claim.Type} - {claim.Value}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("❌ No se encontró un usuario autenticado.");
+                return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
+            }
+            var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+
+            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
+
+            Console.WriteLine($"🔍 Usuario autenticado ID: {userClaimId}, Rol: {userRole}");
+
+            if (string.IsNullOrEmpty(userClaimId))
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
+            }
+
+            if (int.Parse(userClaimId) != id && userRole != "Admin")
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "No tienes permiso para modificar este usuario.");
+            }
+
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
 
-            var userClaimId = int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? "0");
-            if (userClaimId != id && !User.IsInRole("Admin"))
-                return Forbid("No tienes permiso para modificar este usuario.");
-
             usuario.Nombre = !string.IsNullOrEmpty(request.Nombre) ? request.Nombre : usuario.Nombre;
             usuario.Email = !string.IsNullOrEmpty(request.Email) ? request.Email : usuario.Email;
+            usuario.Telefono = !string.IsNullOrEmpty(request.Telefono) ? request.Telefono : usuario.Telefono;
+            usuario.Direccion = !string.IsNullOrEmpty(request.Direccion) ? request.Direccion : usuario.Direccion;
 
             if (!string.IsNullOrEmpty(request.Password))
             {
@@ -71,13 +98,40 @@ namespace EcommerceBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
+            Console.WriteLine("🔍 Verificando autenticación...");
+
+            if (User.Identity is not null && User.Identity.IsAuthenticated)
+            {
+                Console.WriteLine("✅ Usuario autenticado.");
+                foreach (var claim in User.Claims)
+                {
+                    Console.WriteLine($"🔹 Claim: {claim.Type} - {claim.Value}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("❌ No se encontró un usuario autenticado.");
+                return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
+            }
+
+            var userClaimId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
+
+            Console.WriteLine($"🔍 Usuario autenticado ID: {userClaimId}, Rol: {userRole}");
+
+            if (string.IsNullOrEmpty(userClaimId))
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
+            }
+
+            if (int.Parse(userClaimId) != id && userRole != "Admin")
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "No tienes permiso para eliminar este usuario.");
+            }
+
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
-
-            var userClaimId = int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? "0");
-            if (userClaimId != id && !User.IsInRole("Admin"))
-                return Forbid("No tienes permiso para eliminar este usuario.");
 
             await _usuarioService.DeleteAsync(id);
             return NoContent();
@@ -91,10 +145,13 @@ namespace EcommerceBackend.Controllers
         }
     }
 
+    // DTO para actualizar datos
     public class UpdateUserRequest
     {
         public string? Nombre { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
     }
 }

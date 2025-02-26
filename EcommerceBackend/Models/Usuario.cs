@@ -18,6 +18,9 @@ namespace EcommerceBackend.Models
         public DateTime FechaRegistro { get; set; }
         public bool EsAdmin { get; set; }
 
+        public string Telefono { get; set; } = string.Empty;
+        public string Direccion { get; set; } = string.Empty;
+
         public ICollection<Pedido>? Pedidos { get; set; }
         public ICollection<Reseña>? Reseñas { get; set; }
     }
