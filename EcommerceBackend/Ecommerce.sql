@@ -57,7 +57,7 @@ CREATE TABLE Producto (
 INSERT INTO Categoria (Nombre, Descripcion, UrlImagen)
 VALUES
     ('Textil', 'Productos relacionados con textiles, como sábanas, toallas, cortinas, alfombras, etc.', 'https://www.happers.es/server/Portal_0010674/img/blogposts/guia-de-textiles-para-el-hogar-como-combinar-y-cuidar_6979.jpg'),
-    ('Decoración vertical', 'Productos para decoración de paredes, como cuadros, espejos, vinilos, etc.', 'https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcSOEg6bKvWq-MeKNu9xtQrQ1paV9trxyCOA6wrljq8ltSXAe0R1g7579NMLEeopASW0OqnpLwdHk5lyaRdjHmd5dvDE8cK_v_BaglZLow4'),
+    ('Decoración vertical', 'Productos para decoración de paredes, como cuadros, espejos, vinilos, etc.', 'https://images.pexels.com/photos/17840536/pexels-photo-17840536/free-photo-of-pintura-pintando-cuadro-lampara.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'),
     ('Accesorio decorativo', 'Productos que mejoran la estética de los espacios, como lámparas, jarrones, etc.', 'https://ixia.es/media/wysiwyg/2023-03/02-salon-straight-line-2023-05-11.jpg');
 
 -------------------------------------------------------------------------------
