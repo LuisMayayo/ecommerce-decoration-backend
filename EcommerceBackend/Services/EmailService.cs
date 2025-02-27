@@ -20,7 +20,6 @@ namespace EcommerceBackend.Services
             _context = context;
         }
 
-        // Método existente - NO ELIMINAR
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             var message = new MimeMessage();
@@ -113,7 +112,7 @@ namespace EcommerceBackend.Services
                 // Enviar el correo usando el método existente
                 await SendEmailAsync(
                     userEmail,
-                    $"Confirmación de Pedido #{pedidoId} - Mi Tienda",
+                    $"Confirmación de Pedido #{pedidoId} - LM DECORACIONES",
                     bodyBuilder.ToString()
                 );
             }
