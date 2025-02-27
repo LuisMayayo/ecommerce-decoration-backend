@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using EcommerceBackend.Models;
 using EcommerceBackend.Data;
+using EcommerceBackend.Services;
 
 namespace EcommerceBackend.Controllers
 {
@@ -12,10 +15,12 @@ namespace EcommerceBackend.Controllers
     public class PedidoController : ControllerBase
     {
         private readonly EcommerceDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public PedidoController(EcommerceDbContext context)
+        public PedidoController(EcommerceDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -58,6 +63,26 @@ namespace EcommerceBackend.Controllers
             pedido.FechaPedido = DateTime.UtcNow;
             _context.Pedidos.Add(pedido);
             await _context.SaveChangesAsync();
+            
+            // Intentar enviar correo de confirmación automáticamente
+            try
+            {
+                var usuario = await _context.Usuarios.FindAsync(pedido.UsuarioId);
+                if (usuario != null)
+                {
+                    await _emailService.SendOrderConfirmationAsync(
+                        pedido.Id,
+                        usuario.Email,
+                        usuario.Nombre
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                // Solo loguear el error, no afectar la creación del pedido
+                Console.WriteLine($"Error al enviar correo: {ex.Message}");
+            }
+            
             return CreatedAtAction(nameof(GetById), new { id = pedido.Id }, pedido);
         }
 
@@ -75,6 +100,35 @@ namespace EcommerceBackend.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        
+        /// <summary>
+        /// Enviar correo de confirmación de pedido
+        /// </summary>
+        [HttpPost("enviar-confirmacion/{pedidoId}")]
+        public async Task<IActionResult> EnviarConfirmacionPedido(int pedidoId)
+        {
+            try
+            {
+                var pedido = await _context.Pedidos
+                    .Include(p => p.Usuario)
+                    .FirstOrDefaultAsync(p => p.Id == pedidoId);
+
+                if (pedido == null)
+                    return NotFound($"Pedido con ID {pedidoId} no encontrado.");
+
+                await _emailService.SendOrderConfirmationAsync(
+                    pedidoId, 
+                    pedido.Usuario.Email, 
+                    pedido.Usuario.Nombre
+                );
+
+                return Ok(new { mensaje = "Correo de confirmación enviado correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al enviar correo: {ex.Message}" });
+            }
         }
     }
 }
