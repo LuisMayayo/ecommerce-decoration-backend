@@ -123,7 +123,7 @@ namespace EcommerceBackend.Controllers
                     pedido.Usuario.Nombre
                 );
 
-                return Ok(new { mensaje = "Correo de confirmación enviado correctamente" });
+                return Ok(new { mensaje = "Te hemos enviado al correo toda la información de tu pedido." });
             }
             catch (Exception ex)
             {
