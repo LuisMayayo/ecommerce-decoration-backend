@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using EcommerceBackend.Models;
@@ -22,61 +23,145 @@ namespace EcommerceBackend.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ProductoDto>>> GetAll()
         {
-            var productos = await _productoService.GetAllAsync();
-            var dtos = productos.ConvertAll(p => p.ToDto());
-            return Ok(dtos);
+            try
+            {
+                var productos = await _productoService.GetAllAsync();
+                var dtos = productos.ConvertAll(p => p.ToDto());
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al obtener productos: {ex.Message}" });
+            }
+        }
+
+        [HttpGet("paginado")]
+        public async Task<ActionResult> GetPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var (productos, total, pages) = await _productoService.GetPaginatedAsync(page, pageSize);
+                var dtos = productos.ConvertAll(p => p.ToDto());
+                
+                return Ok(new {
+                    productos = dtos,
+                    total,
+                    page,
+                    pageSize,
+                    pages
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al obtener productos paginados: {ex.Message}" });
+            }
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductoDto>> GetById(int id)
         {
-            var producto = await _productoService.GetByIdAsync(id);
-            if (producto == null) return NotFound();
-            return Ok(producto.ToDto());
+            try
+            {
+                var producto = await _productoService.GetByIdAsync(id);
+                return Ok(producto.ToDto());
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al obtener el producto: {ex.Message}" });
+            }
         }
 
         [HttpGet("categoria/{categoriaId}")]
         public async Task<ActionResult<List<ProductoDto>>> GetByCategoria(int categoriaId)
         {
-            var productos = await _productoService.GetByCategoriaIdAsync(categoriaId);
-            var dtos = productos.ConvertAll(p => p.ToDto());
-            return Ok(dtos);
+            try
+            {
+                var productos = await _productoService.GetByCategoriaIdAsync(categoriaId);
+                var dtos = productos.ConvertAll(p => p.ToDto());
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al obtener productos por categoría: {ex.Message}" });
+            }
         }
 
-        // Nuevo endpoint para filtrar por nombre de producto
         [HttpGet("search")]
         public async Task<ActionResult<List<ProductoDto>>> SearchByName([FromQuery] string query)
         {
-            var productos = await _productoService.SearchByNameAsync(query);
-            var dtos = productos.ConvertAll(p => p.ToDto());
-            return Ok(dtos);
+            try
+            {
+                var productos = await _productoService.SearchByNameAsync(query);
+                var dtos = productos.ConvertAll(p => p.ToDto());
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al buscar productos: {ex.Message}" });
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<ProductoDto>> Create([FromBody] Producto producto)
         {
-            producto.Validate();
-            await _productoService.AddAsync(producto);
-            return CreatedAtAction(nameof(GetById), new { id = producto.Id }, producto.ToDto());
+            try
+            {
+                await _productoService.AddAsync(producto);
+                return CreatedAtAction(nameof(GetById), new { id = producto.Id }, producto.ToDto());
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al crear el producto: {ex.Message}" });
+            }
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Producto producto)
         {
-            var existing = await _productoService.GetByIdAsync(id);
-            if (existing == null) return NotFound();
-            producto.Id = id;
-            await _productoService.UpdateAsync(producto);
-            return NoContent();
+            try
+            {
+                producto.Id = id;
+                await _productoService.UpdateAsync(producto);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al actualizar el producto: {ex.Message}" });
+            }
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var producto = await _productoService.GetByIdAsync(id);
-            if (producto == null) return NotFound();
-            await _productoService.DeleteAsync(id);
-            return NoContent();
+            try
+            {
+                await _productoService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error al eliminar el producto: {ex.Message}" });
+            }
         }
     }
 }

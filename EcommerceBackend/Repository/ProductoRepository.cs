@@ -18,12 +18,29 @@ namespace EcommerceBackend.Repositories
 
         public async Task<List<Producto>> GetAllAsync()
         {
-            return await _context.Productos.ToListAsync();
+            return await _context.Productos
+                .Include(p => p.Categoria)
+                .ToListAsync();
+        }
+
+        public async Task<(List<Producto> Productos, int Total)> GetPaginatedAsync(int page, int pageSize)
+        {
+            var total = await _context.Productos.CountAsync();
+            var productos = await _context.Productos
+                .Include(p => p.Categoria)
+                .OrderBy(p => p.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            
+            return (productos, total);
         }
 
         public async Task<Producto> GetByIdAsync(int id)
         {
-            return await _context.Productos.FindAsync(id);
+            return await _context.Productos
+                .Include(p => p.Categoria)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task AddAsync(Producto producto)
@@ -40,7 +57,7 @@ namespace EcommerceBackend.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var producto = await GetByIdAsync(id);
+            var producto = await _context.Productos.FindAsync(id);
             if (producto != null)
             {
                 _context.Productos.Remove(producto);
@@ -50,10 +67,12 @@ namespace EcommerceBackend.Repositories
 
         public async Task<List<Producto>> GetByCategoriaIdAsync(int categoriaId)
         {
-            return await _context.Productos.Where(p => p.CategoriaId == categoriaId).ToListAsync();
+            return await _context.Productos
+                .Include(p => p.Categoria)
+                .Where(p => p.CategoriaId == categoriaId)
+                .ToListAsync();
         }
 
-        // Método modificado para filtrar por palabras en el nombre del producto
         public async Task<List<Producto>> SearchByNameAsync(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
@@ -61,12 +80,10 @@ namespace EcommerceBackend.Repositories
                 return await GetAllAsync();
             }
 
-            var words = query.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)
-                             .Select(word => word.ToLower())
-                             .ToArray();
-
+            query = query.ToLower();
             return await _context.Productos
-                .Where(p => words.Any(word => p.Nombre.ToLower().Contains(word)))
+                .Include(p => p.Categoria)
+                .Where(p => EF.Functions.Like(p.Nombre.ToLower(), $"%{query}%"))
                 .ToListAsync();
         }
     }

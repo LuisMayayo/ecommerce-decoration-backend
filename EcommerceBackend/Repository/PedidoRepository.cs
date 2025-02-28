@@ -1,9 +1,10 @@
-using EcommerceBackend.Data;
-using EcommerceBackend.Models;
-using Microsoft.EntityFrameworkCore;
+// Repositories/PedidoRepository.cs
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using EcommerceBackend.Data;
+using EcommerceBackend.Models;
 
 namespace EcommerceBackend.Repositories
 {
@@ -19,19 +20,24 @@ namespace EcommerceBackend.Repositories
         public async Task<List<Pedido>> GetByUserIdAsync(int userId)
         {
             return await _context.Pedidos
-                .Include(p => p.Detalles)
+                .Include(p => p.Usuario)
                 .Where(p => p.UsuarioId == userId)
                 .ToListAsync();
         }
 
         public async Task<Pedido> GetByIdAsync(int id)
         {
+            return await _context.Pedidos.FindAsync(id);
+        }
+
+        public async Task<Pedido> GetByIdWithUserAsync(int id)
+        {
             return await _context.Pedidos
-                .Include(p => p.Detalles)
+                .Include(p => p.Usuario)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<Pedido> AddAsync(Pedido pedido)
+        public async Task<Pedido> CreateAsync(Pedido pedido)
         {
             _context.Pedidos.Add(pedido);
             await _context.SaveChangesAsync();
@@ -40,7 +46,7 @@ namespace EcommerceBackend.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var pedido = await _context.Pedidos.FindAsync(id);
+            var pedido = await GetByIdAsync(id);
             if (pedido != null)
             {
                 _context.Pedidos.Remove(pedido);

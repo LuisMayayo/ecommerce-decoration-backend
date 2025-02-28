@@ -1,11 +1,9 @@
+// Controllers/PedidoController.cs
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using EcommerceBackend.Models;
-using EcommerceBackend.Data;
 using EcommerceBackend.Services;
 
 namespace EcommerceBackend.Controllers
@@ -14,13 +12,11 @@ namespace EcommerceBackend.Controllers
     [ApiController]
     public class PedidoController : ControllerBase
     {
-        private readonly EcommerceDbContext _context;
-        private readonly IEmailService _emailService;
+        private readonly IPedidoService _pedidoService;
 
-        public PedidoController(EcommerceDbContext context, IEmailService emailService)
+        public PedidoController(IPedidoService pedidoService)
         {
-            _context = context;
-            _emailService = emailService;
+            _pedidoService = pedidoService;
         }
 
         /// <summary>
@@ -29,10 +25,7 @@ namespace EcommerceBackend.Controllers
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<List<Pedido>>> GetByUserId(int userId)
         {
-            var pedidos = await _context.Pedidos
-                .Include(p => p.Usuario) // Incluye la información del usuario
-                .Where(p => p.UsuarioId == userId)
-                .ToListAsync();
+            var pedidos = await _pedidoService.GetByUserIdAsync(userId);
 
             if (pedidos == null || pedidos.Count == 0)
                 return NotFound("No se encontraron pedidos para este usuario.");
@@ -46,9 +39,7 @@ namespace EcommerceBackend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Pedido>> GetById(int id)
         {
-            var pedido = await _context.Pedidos
-                .Include(p => p.Usuario) // Incluye la información del usuario
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var pedido = await _pedidoService.GetByIdAsync(id);
 
             if (pedido == null) return NotFound("Pedido no encontrado.");
             return Ok(pedido);
@@ -60,30 +51,8 @@ namespace EcommerceBackend.Controllers
         [HttpPost]
         public async Task<ActionResult<Pedido>> Create([FromBody] Pedido pedido)
         {
-            pedido.FechaPedido = DateTime.UtcNow;
-            _context.Pedidos.Add(pedido);
-            await _context.SaveChangesAsync();
-            
-            // Intentar enviar correo de confirmación automáticamente
-            try
-            {
-                var usuario = await _context.Usuarios.FindAsync(pedido.UsuarioId);
-                if (usuario != null)
-                {
-                    await _emailService.SendOrderConfirmationAsync(
-                        pedido.Id,
-                        usuario.Email,
-                        usuario.Nombre
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                // Solo loguear el error, no afectar la creación del pedido
-                Console.WriteLine($"Error al enviar correo: {ex.Message}");
-            }
-            
-            return CreatedAtAction(nameof(GetById), new { id = pedido.Id }, pedido);
+            var nuevoPedido = await _pedidoService.CreateAsync(pedido);
+            return CreatedAtAction(nameof(GetById), new { id = nuevoPedido.Id }, nuevoPedido);
         }
 
         /// <summary>
@@ -92,14 +61,15 @@ namespace EcommerceBackend.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var pedido = await _context.Pedidos.FindAsync(id);
-            if (pedido == null)
+            try
+            {
+                await _pedidoService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
                 return NotFound("Pedido no encontrado.");
-
-            _context.Pedidos.Remove(pedido);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            }
         }
         
         /// <summary>
@@ -110,20 +80,12 @@ namespace EcommerceBackend.Controllers
         {
             try
             {
-                var pedido = await _context.Pedidos
-                    .Include(p => p.Usuario)
-                    .FirstOrDefaultAsync(p => p.Id == pedidoId);
-
-                if (pedido == null)
-                    return NotFound($"Pedido con ID {pedidoId} no encontrado.");
-
-                await _emailService.SendOrderConfirmationAsync(
-                    pedidoId, 
-                    pedido.Usuario.Email, 
-                    pedido.Usuario.Nombre
-                );
-
+                await _pedidoService.EnviarConfirmacionPedidoAsync(pedidoId);
                 return Ok(new { mensaje = "Te hemos enviado al correo toda la información de tu pedido." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

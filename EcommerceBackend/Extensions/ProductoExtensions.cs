@@ -12,6 +12,8 @@ namespace EcommerceBackend.Extensions
                 throw new ArgumentException("El nombre del producto no puede estar vacío.");
             if (producto.Precio <= 0)
                 throw new ArgumentException("El precio del producto debe ser mayor a cero.");
+            if (producto.CategoriaId <= 0)
+                throw new ArgumentException("Debe seleccionar una categoría válida.");
         }
 
         public static ProductoDto ToDto(this Producto producto)
@@ -23,7 +25,9 @@ namespace EcommerceBackend.Extensions
                 Precio = producto.Precio,
                 CategoriaId = producto.CategoriaId,
                 Descripcion = producto.Descripcion ?? string.Empty,
-                UrlImagen = producto.UrlImagen ?? string.Empty
+                UrlImagen = producto.UrlImagen ?? string.Empty,
+                // Si la categoría está cargada, incluir su nombre
+                CategoriaNombre = producto.Categoria?.Nombre ?? string.Empty
             };
         }
     }

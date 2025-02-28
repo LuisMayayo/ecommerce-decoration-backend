@@ -1,6 +1,7 @@
-using EcommerceBackend.Models;
+// IRepository/IPedidoRepository.cs
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EcommerceBackend.Models;
 
 namespace EcommerceBackend.Repositories
 {
@@ -8,7 +9,8 @@ namespace EcommerceBackend.Repositories
     {
         Task<List<Pedido>> GetByUserIdAsync(int userId);
         Task<Pedido> GetByIdAsync(int id);
-        Task<Pedido> AddAsync(Pedido pedido);
+        Task<Pedido> CreateAsync(Pedido pedido);
         Task DeleteAsync(int id);
+        Task<Pedido> GetByIdWithUserAsync(int id);
     }
 }
