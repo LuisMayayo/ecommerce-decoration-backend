@@ -17,6 +17,10 @@ namespace EcommerceBackend.Services
             _pedidoRepository = pedidoRepository;
             _emailService = emailService;
         }
+        public async Task<List<Pedido>> GetAllAsync()
+    {
+        return await _pedidoRepository.GetAllAsync();
+    }
 
         public async Task<List<Pedido>> GetByUserIdAsync(int userId)
         {

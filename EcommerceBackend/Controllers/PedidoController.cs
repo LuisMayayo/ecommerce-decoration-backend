@@ -44,6 +44,13 @@ namespace EcommerceBackend.Controllers
             if (pedido == null) return NotFound("Pedido no encontrado.");
             return Ok(pedido);
         }
+        [HttpGet]
+        public async Task<ActionResult<List<Pedido>>> GetAll()
+        {
+            var pedidos = await _pedidoService.GetAllAsync();
+            return Ok(pedidos);
+        }
+
 
         /// <summary>
         /// Crear un nuevo pedido
@@ -71,7 +78,7 @@ namespace EcommerceBackend.Controllers
                 return NotFound("Pedido no encontrado.");
             }
         }
-        
+
         /// <summary>
         /// Enviar correo de confirmación de pedido
         /// </summary>

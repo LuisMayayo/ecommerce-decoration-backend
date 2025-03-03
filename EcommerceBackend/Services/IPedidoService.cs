@@ -12,5 +12,6 @@ namespace EcommerceBackend.Services
         Task<Pedido> CreateAsync(Pedido pedido);
         Task DeleteAsync(int id);
         Task EnviarConfirmacionPedidoAsync(int pedidoId);
+        Task<List<Pedido>> GetAllAsync();
     }
 }

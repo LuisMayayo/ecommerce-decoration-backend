@@ -16,6 +16,10 @@ namespace EcommerceBackend.Repositories
         {
             _context = context;
         }
+         public async Task<List<Pedido>> GetAllAsync()
+    {
+        return await _context.Pedidos.ToListAsync();
+    }
 
         public async Task<List<Pedido>> GetByUserIdAsync(int userId)
         {
