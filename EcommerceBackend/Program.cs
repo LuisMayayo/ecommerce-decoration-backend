@@ -46,7 +46,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
             // Asegura que se reconozca el claim "role" (el que se asigna en JwtService)
-            RoleClaimType = "role" 
+            RoleClaimType = ClaimTypes.Role 
         };
 
         // Manejo de eventos para depurar y retornar mensajes personalizados

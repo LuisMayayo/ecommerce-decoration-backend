@@ -21,6 +21,9 @@ namespace EcommerceBackend.Models
         public string Telefono { get; set; } = string.Empty;
         public string Direccion { get; set; } = string.Empty;
 
+        public string? ResetToken { get; set; } // Nullable string
+        public DateTime? ResetTokenExpiration { get; set; } // Nullable DateTime
+
         public ICollection<Pedido>? Pedidos { get; set; }
         public ICollection<Reseña>? Reseñas { get; set; }
     }

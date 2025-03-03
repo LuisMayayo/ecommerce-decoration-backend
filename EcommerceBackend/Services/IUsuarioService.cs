@@ -13,5 +13,6 @@ namespace EcommerceBackend.Services
         Task DeleteAsync(int id);
         // Agrega este método para obtener todos los usuarios
         Task<List<Usuario>> GetAllAsync();
+        Task<Usuario> GetByResetTokenAsync(string resetToken);
     }
 }

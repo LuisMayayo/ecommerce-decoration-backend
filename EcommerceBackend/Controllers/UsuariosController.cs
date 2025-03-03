@@ -143,6 +143,8 @@ namespace EcommerceBackend.Controllers
         {
             return Ok("Este es un endpoint solo para administradores.");
         }
+
+
     }
 
     // DTO para actualizar datos

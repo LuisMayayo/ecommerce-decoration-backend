@@ -12,5 +12,7 @@ namespace EcommerceBackend.Repositories
         Task UpdateAsync(Usuario usuario);
         Task DeleteAsync(int id);
         Task<List<Usuario>> GetAllAsync();
+
+        Task<Usuario> GetByResetTokenAsync(string resetToken);
     }
 }

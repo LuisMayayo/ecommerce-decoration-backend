@@ -24,6 +24,11 @@ namespace EcommerceBackend.Services
             return await _usuarioRepository.GetByEmailAsync(email);
         }
 
+        public async Task<Usuario> GetByResetTokenAsync(string resetToken)
+        {
+            return await _usuarioRepository.GetByResetTokenAsync(resetToken);
+        }
+
         public async Task AddAsync(Usuario usuario)
         {
             await _usuarioRepository.AddAsync(usuario);

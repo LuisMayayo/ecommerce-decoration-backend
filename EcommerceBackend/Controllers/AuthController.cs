@@ -45,7 +45,8 @@ namespace EcommerceBackend.Controllers
             {
                 Nombre = request.Nombre,
                 Email = request.Email,
-                FechaRegistro = DateTime.UtcNow
+                FechaRegistro = DateTime.UtcNow,
+                EsAdmin = request.EsAdmin // Nuevo campo en RegisterRequest
             };
 
             using (var hmac = new HMACSHA512())
@@ -83,7 +84,7 @@ namespace EcommerceBackend.Controllers
             }
 
             var token = _jwtService.GenerateToken(usuario.Id, usuario.Email, usuario.EsAdmin);
-            return Ok(new { Token = token });
+            return Ok(new { Token = token, EsAdmin = usuario.EsAdmin });
         }
 
         [HttpPost("forgot-password")]
@@ -93,7 +94,15 @@ namespace EcommerceBackend.Controllers
             if (usuario == null)
                 return Ok("Si el correo existe, se enviará un enlace para restablecer la contraseña.");
 
+            // Generate a unique reset token
             var resetToken = Guid.NewGuid().ToString();
+            usuario.ResetToken = resetToken;
+            usuario.ResetTokenExpiration = DateTime.UtcNow.AddHours(1); // Token valid for 1 hour
+
+            // Save changes to the database
+            await _usuarioService.UpdateAsync(usuario);
+
+            // Send email with reset link
             var resetLink = $"http://localhost:5173/reset-password?token={resetToken}";
             var subject = "Restablecer contraseña";
             var body = $"Hola {usuario.Nombre},\n\nHaz clic en el siguiente enlace para restablecer tu contraseña:\n{resetLink}\n\nSi no solicitaste esto, ignora este mensaje.";
@@ -102,15 +111,46 @@ namespace EcommerceBackend.Controllers
             return Ok("Se envió un enlace para restablecer la contraseña (si el correo existe).");
         }
 
+
+
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
+            // Validate token format
+            if (string.IsNullOrEmpty(request.Token))
+                return BadRequest("Token inválido.");
+
+            // Look up user by reset token
+            var usuario = await _usuarioService.GetByResetTokenAsync(request.Token);
+            if (usuario == null || usuario.ResetTokenExpiration < DateTime.UtcNow)
+                return BadRequest("Token inválido o expirado.");
+
+            // Validate new password format
             var passwordPattern = @"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
             if (!Regex.IsMatch(request.NewPassword, passwordPattern))
                 return BadRequest("La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial.");
 
-            return Ok("Contraseña restablecida exitosamente. (Simulación)");
+            // Hash the new password
+            string newPasswordHash;
+            string newPasswordSalt;
+            using (var hmac = new HMACSHA512())
+            {
+                newPasswordSalt = Convert.ToBase64String(hmac.Key);
+                newPasswordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(request.NewPassword)));
+            }
+
+            // Update user with new password and clear reset token
+            usuario.PasswordHash = newPasswordHash;
+            usuario.PasswordSalt = newPasswordSalt;
+            usuario.ResetToken = null;
+            usuario.ResetTokenExpiration = null;
+
+            await _usuarioService.UpdateAsync(usuario);
+
+            return Ok("Contraseña restablecida exitosamente.");
         }
+
+
 
         [HttpPost("google-login")]
         public async Task<ActionResult<object>> GoogleLogin([FromBody] GoogleLoginRequest request)
@@ -157,7 +197,9 @@ namespace EcommerceBackend.Controllers
         public string Nombre { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public bool EsAdmin { get; set; } = false; // Nuevo campo
     }
+
 
     public class LoginRequest
     {
