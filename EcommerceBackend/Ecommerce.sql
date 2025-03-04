@@ -18,7 +18,9 @@ CREATE TABLE Usuario (
     FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
     EsAdmin BIT NOT NULL DEFAULT 0,
     Telefono NVARCHAR(20) NULL,
-    Direccion NVARCHAR(255) NULL
+    Direccion NVARCHAR(255) NULL,
+    ResetToken NVARCHAR(255) NULL,
+    ResetTokenExpiration DATETIME NULL
 );
 
 -------------------------------------------------------------------------------

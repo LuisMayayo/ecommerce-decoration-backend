@@ -16,10 +16,10 @@ namespace EcommerceBackend.Repositories
         {
             _context = context;
         }
-         public async Task<List<Pedido>> GetAllAsync()
-    {
-        return await _context.Pedidos.ToListAsync();
-    }
+        public async Task<List<Pedido>> GetAllAsync()
+        {
+            return await _context.Pedidos.ToListAsync();
+        }
 
         public async Task<List<Pedido>> GetByUserIdAsync(int userId)
         {
@@ -47,6 +47,15 @@ namespace EcommerceBackend.Repositories
             await _context.SaveChangesAsync();
             return pedido;
         }
+
+        public async Task<Pedido> GetByIdWithDetailsAsync(int id)
+        {
+            return await _context.Pedidos
+                .Include(p => p.Detalles)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+
 
         public async Task DeleteAsync(int id)
         {

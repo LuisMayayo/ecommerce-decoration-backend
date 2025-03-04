@@ -14,5 +14,6 @@ namespace EcommerceBackend.Repositories
         Task<Pedido> GetByIdWithUserAsync(int id);
 
          Task<List<Pedido>> GetAllAsync();
+         Task<Pedido> GetByIdWithDetailsAsync(int id);
     }
 }

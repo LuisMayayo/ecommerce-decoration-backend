@@ -22,7 +22,7 @@ namespace EcommerceBackend.Controllers
             _usuarioService = usuarioService;
         }
 
-        // Se utiliza el DTO para retornar la información del usuario
+        // GET: api/usuario/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<UsuarioDto>> GetById(int id)
         {
@@ -36,67 +36,55 @@ namespace EcommerceBackend.Controllers
                 Nombre = usuario.Nombre,
                 Email = usuario.Email,
                 FechaRegistro = usuario.FechaRegistro,
-                EsAdmin = usuario.EsAdmin
+                EsAdmin = usuario.EsAdmin,
+                Telefono = usuario.Telefono,  // Se incluye teléfono
+                Direccion = usuario.Direccion // Se incluye dirección
             };
 
             return Ok(usuarioDto);
         }
 
-        // Se retorna una lista de UsuarioDto
+        // GET: api/usuario
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAll()
         {
             var usuarios = await _usuarioService.GetAllAsync();
-
             var dtos = usuarios.Select(u => new UsuarioDto
             {
                 Id = u.Id,
                 Nombre = u.Nombre,
                 Email = u.Email,
                 FechaRegistro = u.FechaRegistro,
-                EsAdmin = u.EsAdmin
+                EsAdmin = u.EsAdmin,
+                Telefono = u.Telefono,   // Se incluye teléfono
+                Direccion = u.Direccion  // Se incluye dirección
             }).ToList();
 
             return Ok(dtos);
         }
 
+        // PUT: api/usuario/{id}
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
-            Console.WriteLine("🔍 Verificando autenticación...");
-
-            if (User.Identity is not null && User.Identity.IsAuthenticated)
-            {
-                Console.WriteLine("✅ Usuario autenticado.");
-                foreach (var claim in User.Claims)
-                {
-                    Console.WriteLine($"🔹 Claim: {claim.Type} - {claim.Value}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("❌ No se encontró un usuario autenticado.");
-                return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
-            }
+            // El middleware [Authorize] ya verifica autenticación
             var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
-
-            Console.WriteLine($"🔍 Usuario autenticado ID: {userClaimId}, Rol: {userRole}");
-
-            if (string.IsNullOrEmpty(userClaimId))
+            if (!int.TryParse(userClaimId, out int claimId))
             {
                 return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
             }
+            var userRole = User.FindFirst("role")?.Value 
+                ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
 
-            if (int.Parse(userClaimId) != id && userRole != "Admin")
-            {
+            if (claimId != id && userRole != "Admin")
                 return StatusCode(StatusCodes.Status403Forbidden, "No tienes permiso para modificar este usuario.");
-            }
 
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
 
+            // Actualización de campos
             usuario.Nombre = !string.IsNullOrEmpty(request.Nombre) ? request.Nombre : usuario.Nombre;
             usuario.Email = !string.IsNullOrEmpty(request.Email) ? request.Email : usuario.Email;
             usuario.Telefono = !string.IsNullOrEmpty(request.Telefono) ? request.Telefono : usuario.Telefono;
@@ -115,39 +103,21 @@ namespace EcommerceBackend.Controllers
             return NoContent();
         }
 
+        // DELETE: api/usuario/{id}
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            Console.WriteLine("🔍 Verificando autenticación...");
-
-            if (User.Identity is not null && User.Identity.IsAuthenticated)
-            {
-                Console.WriteLine("✅ Usuario autenticado.");
-                foreach (var claim in User.Claims)
-                {
-                    Console.WriteLine($"🔹 Claim: {claim.Type} - {claim.Value}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("❌ No se encontró un usuario autenticado.");
-                return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
-            }
-
             var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
-
-            Console.WriteLine($"🔍 Usuario autenticado ID: {userClaimId}, Rol: {userRole}");
-
-            if (string.IsNullOrEmpty(userClaimId))
+            if (!int.TryParse(userClaimId, out int claimId))
             {
                 return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
             }
+            var userRole = User.FindFirst("role")?.Value 
+                ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
 
-            if (int.Parse(userClaimId) != id && userRole != "Admin")
-            {
+            if (claimId != id && userRole != "Admin")
                 return StatusCode(StatusCodes.Status403Forbidden, "No tienes permiso para eliminar este usuario.");
-            }
 
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
