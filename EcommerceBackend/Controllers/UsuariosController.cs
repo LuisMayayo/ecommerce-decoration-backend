@@ -114,7 +114,7 @@ namespace EcommerceBackend.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
             }
 
-            var userClaimId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
 
             Console.WriteLine($"🔍 Usuario autenticado ID: {userClaimId}, Rol: {userRole}");
