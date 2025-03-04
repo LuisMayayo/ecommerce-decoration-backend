@@ -7,6 +7,7 @@ using EcommerceBackend.Models;
 using EcommerceBackend.DTOs;
 using EcommerceBackend.Services;
 using System.Security.Claims;
+using System.Linq; // Necesario para el Select
 
 namespace EcommerceBackend.Controllers
 {
@@ -21,21 +22,42 @@ namespace EcommerceBackend.Controllers
             _usuarioService = usuarioService;
         }
 
+        // Se utiliza el DTO para retornar la información del usuario
         [HttpGet("{id}")]
-        public async Task<ActionResult<Usuario>> GetById(int id)
+        public async Task<ActionResult<UsuarioDto>> GetById(int id)
         {
             var usuario = await _usuarioService.GetByIdAsync(id);
             if (usuario == null)
                 return NotFound("Usuario no encontrado.");
 
-            return Ok(usuario);
+            var usuarioDto = new UsuarioDto
+            {
+                Id = usuario.Id,
+                Nombre = usuario.Nombre,
+                Email = usuario.Email,
+                FechaRegistro = usuario.FechaRegistro,
+                EsAdmin = usuario.EsAdmin
+            };
+
+            return Ok(usuarioDto);
         }
 
+        // Se retorna una lista de UsuarioDto
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Usuario>>> GetAll()
+        public async Task<ActionResult<IEnumerable<UsuarioDto>>> GetAll()
         {
             var usuarios = await _usuarioService.GetAllAsync();
-            return Ok(usuarios);
+
+            var dtos = usuarios.Select(u => new UsuarioDto
+            {
+                Id = u.Id,
+                Nombre = u.Nombre,
+                Email = u.Email,
+                FechaRegistro = u.FechaRegistro,
+                EsAdmin = u.EsAdmin
+            }).ToList();
+
+            return Ok(dtos);
         }
 
         [HttpPut("{id}")]
@@ -57,8 +79,6 @@ namespace EcommerceBackend.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
             }
             var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-
             var userRole = User.FindFirst("role")?.Value ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
 
             Console.WriteLine($"🔍 Usuario autenticado ID: {userClaimId}, Rol: {userRole}");
@@ -143,8 +163,6 @@ namespace EcommerceBackend.Controllers
         {
             return Ok("Este es un endpoint solo para administradores.");
         }
-
-
     }
 
     // DTO para actualizar datos
