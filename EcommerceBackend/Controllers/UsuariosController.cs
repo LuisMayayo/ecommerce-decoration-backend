@@ -68,13 +68,13 @@ namespace EcommerceBackend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
-            // El middleware [Authorize] ya verifica autenticación
+            // Verificar autenticación y autorización (como ya se hace)
             var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!int.TryParse(userClaimId, out int claimId))
             {
                 return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
             }
-            var userRole = User.FindFirst("role")?.Value 
+            var userRole = User.FindFirst("role")?.Value
                 ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
 
             if (claimId != id && userRole != "Admin")
@@ -89,6 +89,12 @@ namespace EcommerceBackend.Controllers
             usuario.Email = !string.IsNullOrEmpty(request.Email) ? request.Email : usuario.Email;
             usuario.Telefono = !string.IsNullOrEmpty(request.Telefono) ? request.Telefono : usuario.Telefono;
             usuario.Direccion = !string.IsNullOrEmpty(request.Direccion) ? request.Direccion : usuario.Direccion;
+
+            // Si se envía el campo EsAdmin, actualizarlo
+            if (request.EsAdmin.HasValue)
+            {
+                usuario.EsAdmin = request.EsAdmin.Value;
+            }
 
             if (!string.IsNullOrEmpty(request.Password))
             {
@@ -113,7 +119,7 @@ namespace EcommerceBackend.Controllers
             {
                 return StatusCode(StatusCodes.Status401Unauthorized, "No se encontró un usuario autenticado.");
             }
-            var userRole = User.FindFirst("role")?.Value 
+            var userRole = User.FindFirst("role")?.Value
                 ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "No definido";
 
             if (claimId != id && userRole != "Admin")
@@ -135,7 +141,6 @@ namespace EcommerceBackend.Controllers
         }
     }
 
-    // DTO para actualizar datos
     public class UpdateUserRequest
     {
         public string? Nombre { get; set; }
@@ -143,5 +148,8 @@ namespace EcommerceBackend.Controllers
         public string? Password { get; set; }
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
+        // Nueva propiedad para actualizar el rol (true = Admin, false = Usuario)
+        public bool? EsAdmin { get; set; }
     }
+
 }
