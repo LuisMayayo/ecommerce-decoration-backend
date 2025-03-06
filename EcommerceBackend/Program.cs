@@ -45,11 +45,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtSettings["Audience"],
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-            // Asegura que se reconozca el claim "role" (el que se asigna en JwtService)
-            RoleClaimType = ClaimTypes.Role 
+            RoleClaimType = ClaimTypes.Role
         };
 
-        // Manejo de eventos para depurar y retornar mensajes personalizados
         options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
@@ -95,7 +93,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -106,7 +103,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API de Ecommerce con autenticación JWT"
     });
 
-    // Definir el esquema de seguridad "Bearer"
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "Introduce el token en el siguiente formato: Bearer {token}",
@@ -117,7 +113,6 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT"
     });
 
-    // Hacer que todas las peticiones usen el esquema "Bearer" por defecto
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -134,15 +129,13 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// 5) Registrar repositorios
+// 5) Registrar repositorios y servicios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IDetallePedidoRepository, DetallePedidoRepository>();
 builder.Services.AddScoped<IReseñaRepository, ReseñaRepository>();
-
-// 6) Registrar servicios
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
@@ -150,22 +143,23 @@ builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IDetallePedidoService, DetallePedidoService>();
 builder.Services.AddScoped<IReseñaService, ReseñaService>();
 
-// 7) Registrar EmailSettings y EmailService
+// 6) Registrar EmailSettings y EmailService
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// 8) Registrar JwtService (asegúrate de que esté configurado para generar el token con los claims correctos)
+// 7) Registrar JwtService
 builder.Services.AddSingleton<JwtService>();
 
-// 9) Construir la aplicación
+// 8) Construir la aplicación
 var app = builder.Build();
 
-// 10) Middlewares y configuración del pipeline
-if (app.Environment.IsDevelopment())
+// 🔄 Configurar Swagger para producción
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce API v1");
+    c.RoutePrefix = string.Empty; // Swagger en la raíz: http://localhost:5004
+});
 
 app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
