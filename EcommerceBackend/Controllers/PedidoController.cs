@@ -19,9 +19,6 @@ namespace EcommerceBackend.Controllers
             _pedidoService = pedidoService;
         }
 
-        /// <summary>
-        /// Obtener pedidos por usuario ID
-        /// </summary>
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<List<Pedido>>> GetByUserId(int userId)
         {
@@ -33,9 +30,6 @@ namespace EcommerceBackend.Controllers
             return Ok(pedidos);
         }
 
-        /// <summary>
-        /// Obtener un pedido por ID
-        /// </summary>
         [HttpGet("{id}")]
         public async Task<ActionResult<Pedido>> GetById(int id)
         {
@@ -51,10 +45,6 @@ namespace EcommerceBackend.Controllers
             return Ok(pedidos);
         }
 
-
-        /// <summary>
-        /// Crear un nuevo pedido
-        /// </summary>
         [HttpPost]
         public async Task<ActionResult<Pedido>> Create([FromBody] Pedido pedido)
         {
@@ -62,9 +52,6 @@ namespace EcommerceBackend.Controllers
             return CreatedAtAction(nameof(GetById), new { id = nuevoPedido.Id }, nuevoPedido);
         }
 
-        /// <summary>
-        /// Eliminar un pedido por ID
-        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -79,9 +66,6 @@ namespace EcommerceBackend.Controllers
             }
         }
 
-        /// <summary>
-        /// Enviar correo de confirmación de pedido
-        /// </summary>
         [HttpPost("enviar-confirmacion/{pedidoId}")]
         public async Task<IActionResult> EnviarConfirmacionPedido(int pedidoId)
         {

@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EcommerceBackend.Models
 {
-    // La tabla en la base de datos se llama "Categoria" (sin 's')
     [Table("Categoria")]
     public class Categoria
     {

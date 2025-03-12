@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EcommerceBackend.Models
 {
-    [Table("DetallePedido")] // 👈 Evita que EF Core pluralice el nombre
+    [Table("DetallePedido")] 
     public class DetallePedido
     {
         [Key]
@@ -24,10 +24,10 @@ namespace EcommerceBackend.Models
 
         // Relación con Pedido
         [ForeignKey("PedidoId")]
-        public virtual Pedido? Pedido { get; set; } // 👈 Marcado como opcional para evitar problemas de carga
+        public virtual Pedido? Pedido { get; set; }
 
         // Relación con Producto
         [ForeignKey("ProductoId")]
-        public virtual Producto? Producto { get; set; } // 👈 También marcado como opcional
+        public virtual Producto? Producto { get; set; }
     }
 }

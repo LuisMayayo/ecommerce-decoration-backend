@@ -9,6 +9,6 @@ namespace EcommerceBackend.Services
         Task<List<Reseña>> GetByProductoIdAsync(int productoId);
         Task AddAsync(Reseña reseña);
         Task DeleteAsync(int id);
-        Task<double> GetPromedioCalificacionAsync(int productoId); // 🔹 Nuevo método
+        Task<double> GetPromedioCalificacionAsync(int productoId);
     }
 }

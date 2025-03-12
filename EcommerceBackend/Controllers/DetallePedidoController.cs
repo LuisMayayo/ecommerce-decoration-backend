@@ -19,18 +19,14 @@ namespace EcommerceBackend.Controllers
             _context = context;
         }
 
-        /// <summary>
-        /// Obtener detalles del pedido por ID de Pedido.
-        /// Incluye información del usuario, producto y categoría.
-        /// </summary>
         [HttpGet("pedido/{pedidoId}")]
         public async Task<ActionResult<List<DetallePedido>>> GetByPedidoId(int pedidoId)
         {
             var detalles = await _context.DetallesPedido
                 .Include(d => d.Pedido)
-                    .ThenInclude(p => p.Usuario)  // Incluye información del usuario
-                .Include(d => d.Producto)  // Incluye información del producto
-                    .ThenInclude(p => p.Categoria) // Incluye la categoría del producto
+                    .ThenInclude(p => p.Usuario)  
+                .Include(d => d.Producto) 
+                    .ThenInclude(p => p.Categoria) 
                 .Where(d => d.PedidoId == pedidoId)
                 .ToListAsync();
 
@@ -40,9 +36,6 @@ namespace EcommerceBackend.Controllers
             return Ok(detalles);
         }
 
-        /// <summary>
-        /// Agregar detalles de un pedido.
-        /// </summary>
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] List<DetallePedido> detallesPedido)
         {
@@ -66,9 +59,6 @@ namespace EcommerceBackend.Controllers
             return Ok(new { message = "Detalles de pedido agregados correctamente" });
         }
 
-        /// <summary>
-        /// Eliminar un detalle de pedido por su ID.
-        /// </summary>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

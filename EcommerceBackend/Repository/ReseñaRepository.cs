@@ -20,7 +20,7 @@ namespace EcommerceBackend.Repositories
         {
             return await _context.Reseñas
                 .Where(r => r.ProductoId == productoId)
-                .Include(r => r.Usuario) // Incluir usuario para mostrar su nombre
+                .Include(r => r.Usuario) 
                 .ToListAsync();
         }
 
@@ -29,14 +29,14 @@ namespace EcommerceBackend.Repositories
             var calificaciones = await _context.Reseñas
                 .Where(r => r.ProductoId == productoId)
                 .Select(r => (double)r.Calificacion)
-                .ToListAsync(); // 👈 Se obtiene la lista primero
+                .ToListAsync(); 
 
             if (calificaciones.Count == 0)
             {
-                return 0; // Si no hay calificaciones, devolvemos 0 en lugar de llamar a AverageAsync()
+                return 0; 
             }
 
-            return calificaciones.Average(); // 👈 Se calcula el promedio de forma segura
+            return calificaciones.Average(); 
         }
 
 

@@ -17,8 +17,6 @@ namespace EcommerceBackend.Repositories
 
         public async Task<Usuario> GetByResetTokenAsync(string resetToken)
         {
-            // Implement the logic to find a user by reset token
-            // This might vary depending on your data access method (e.g., Entity Framework, Dapper)
             return await _context.Usuarios.FirstOrDefaultAsync(u => u.ResetToken == resetToken);}
 
         public async Task<Usuario> GetByIdAsync(int id)
@@ -53,7 +51,6 @@ namespace EcommerceBackend.Repositories
             }
         }
 
-        // Método para obtener todos los usuarios
         public async Task<List<Usuario>> GetAllAsync()
         {
             return await _context.Usuarios.ToListAsync();

@@ -7,7 +7,6 @@ using EcommerceBackend.Models;
 using EcommerceBackend.DTOs;
 using EcommerceBackend.Services;
 using System.Security.Claims;
-using System.Linq; // Necesario para el Select
 
 namespace EcommerceBackend.Controllers
 {
@@ -37,8 +36,8 @@ namespace EcommerceBackend.Controllers
                 Email = usuario.Email,
                 FechaRegistro = usuario.FechaRegistro,
                 EsAdmin = usuario.EsAdmin,
-                Telefono = usuario.Telefono,  // Se incluye teléfono
-                Direccion = usuario.Direccion // Se incluye dirección
+                Telefono = usuario.Telefono,
+                Direccion = usuario.Direccion 
             };
 
             return Ok(usuarioDto);
@@ -56,8 +55,8 @@ namespace EcommerceBackend.Controllers
                 Email = u.Email,
                 FechaRegistro = u.FechaRegistro,
                 EsAdmin = u.EsAdmin,
-                Telefono = u.Telefono,   // Se incluye teléfono
-                Direccion = u.Direccion  // Se incluye dirección
+                Telefono = u.Telefono,  
+                Direccion = u.Direccion 
             }).ToList();
 
             return Ok(dtos);
@@ -148,7 +147,6 @@ namespace EcommerceBackend.Controllers
         public string? Password { get; set; }
         public string? Telefono { get; set; }
         public string? Direccion { get; set; }
-        // Nueva propiedad para actualizar el rol (true = Admin, false = Usuario)
         public bool? EsAdmin { get; set; }
     }
 

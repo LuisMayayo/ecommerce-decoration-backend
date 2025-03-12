@@ -22,29 +22,23 @@ namespace EcommerceBackend.Repositories
         /// </summary>
         public async Task<List<DetallePedido>> GetByPedidoIdAsync(int pedidoId)
         {
-            return await _context.DetallesPedido // 🔹 Corregido (Plural)
-                .Include(d => d.Producto)        // 🔹 Cargar información del producto
-                    .ThenInclude(p => p.Categoria) // 🔹 Cargar categoría del producto
+            return await _context.DetallesPedido
+                .Include(d => d.Producto)
+                    .ThenInclude(p => p.Categoria) 
                 .Where(d => d.PedidoId == pedidoId)
                 .ToListAsync();
         }
 
-        /// <summary>
-        /// Obtener un detalle de pedido por su ID.
-        /// </summary>
         public async Task<DetallePedido> GetByIdAsync(int id)
         {
-            return await _context.DetallesPedido // 🔹 Corregido (Plural)
+            return await _context.DetallesPedido
                 .Include(d => d.Producto)
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
-        /// <summary>
-        /// Agregar un nuevo detalle de pedido.
-        /// </summary>
         public async Task AddAsync(DetallePedido detallePedido)
         {
-            _context.DetallesPedido.Add(detallePedido); // 🔹 Corregido (Plural)
+            _context.DetallesPedido.Add(detallePedido);
             await _context.SaveChangesAsync();
         }
 
@@ -53,10 +47,10 @@ namespace EcommerceBackend.Repositories
         /// </summary>
         public async Task DeleteAsync(int id)
         {
-            var detalle = await _context.DetallesPedido.FindAsync(id); // 🔹 Corregido (Plural)
+            var detalle = await _context.DetallesPedido.FindAsync(id); 
             if (detalle != null)
             {
-                _context.DetallesPedido.Remove(detalle); // 🔹 Corregido (Plural)
+                _context.DetallesPedido.Remove(detalle);
                 await _context.SaveChangesAsync();
             }
         }

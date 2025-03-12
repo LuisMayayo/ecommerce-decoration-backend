@@ -35,7 +35,7 @@ namespace EcommerceBackend.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error al obtener el promedio de calificación: {ex.Message}");
+                Console.WriteLine($"Error al obtener el promedio de calificación: {ex.Message}");
                 return StatusCode(500, $"Error interno al calcular el promedio: {ex.Message}");
             }
         }

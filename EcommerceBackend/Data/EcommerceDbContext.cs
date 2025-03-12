@@ -11,7 +11,7 @@ namespace EcommerceBackend.Data
         public DbSet<Producto> Productos { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
-        public DbSet<DetallePedido> DetallesPedido { get; set; } // Corregido nombre de la colección
+        public DbSet<DetallePedido> DetallesPedido { get; set; }
         public DbSet<Reseña> Reseñas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
