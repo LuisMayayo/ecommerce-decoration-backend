@@ -15,6 +15,10 @@ namespace EcommerceBackend.Models
         public string? UrlImagen { get; set; }
         public string? Descripcion { get; set; }
 
+       public int? ProveedorId { get; set; }
+
+        // Propiedades de navegación
         public Categoria? Categoria { get; set; }
+        public Proveedor? Proveedor { get; set; }
     }
 }
