@@ -6,6 +6,26 @@ CREATE DATABASE EcommerceDB;
 USE EcommerceDB;
 
 
+CREATE TABLE Proveedores (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) NOT NULL,
+    Telefono NVARCHAR(20) NOT NULL
+);
+
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Distribuidora ABC', 'contacto@abc.com', '912345678');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Suministros XYZ', 'info@xyz.com', '623456789');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Mayorista Tech', 'ventas@mayorista-tech.com', '934567890');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Importaciones Global', 'pedidos@importglobal.com', '645678901');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Productos Industriales', 'comercial@pind.com', '956789012');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Materiales Express', 'info@matexpress.com', '667890123');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Componentes Electrónicos', 'ventas@compoelec.com', '978901234');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Distribución Rápida', 'contacto@distrap.com', '689012345');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Soluciones Empresariales', 'info@solemp.com', '990123456');
+INSERT INTO Proveedores (Nombre, Email, Telefono) VALUES ('Proveedores Unidos', 'comercial@provunidos.com', '601234567');
+
+
+
 -------------------------------------------------------------------------------
 -- 1) TABLA USUARIO (con EsAdmin para distinguir roles y nuevos campos)
 -------------------------------------------------------------------------------
