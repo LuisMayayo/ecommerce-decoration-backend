@@ -20,6 +20,7 @@ namespace EcommerceBackend.Controllers
             _productoService = productoService;
         }
 
+        // GET api/Producto
         [HttpGet]
         public async Task<ActionResult<List<ProductoDto>>> GetAll()
         {
@@ -35,28 +36,7 @@ namespace EcommerceBackend.Controllers
             }
         }
 
-        [HttpGet("paginado")]
-        public async Task<ActionResult> GetPaginated([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-        {
-            try
-            {
-                var (productos, total, pages) = await _productoService.GetPaginatedAsync(page, pageSize);
-                var dtos = productos.ConvertAll(p => p.ToDto());
-                
-                return Ok(new {
-                    productos = dtos,
-                    total,
-                    page,
-                    pageSize,
-                    pages
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = $"Error al obtener productos paginados: {ex.Message}" });
-            }
-        }
-
+        // GET api/Producto/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductoDto>> GetById(int id)
         {
@@ -75,6 +55,7 @@ namespace EcommerceBackend.Controllers
             }
         }
 
+        // GET api/Producto/categoria/{categoriaId}
         [HttpGet("categoria/{categoriaId}")]
         public async Task<ActionResult<List<ProductoDto>>> GetByCategoria(int categoriaId)
         {
@@ -90,21 +71,7 @@ namespace EcommerceBackend.Controllers
             }
         }
 
-        [HttpGet("search")]
-        public async Task<ActionResult<List<ProductoDto>>> SearchByName([FromQuery] string query)
-        {
-            try
-            {
-                var productos = await _productoService.SearchByNameAsync(query);
-                var dtos = productos.ConvertAll(p => p.ToDto());
-                return Ok(dtos);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = $"Error al buscar productos: {ex.Message}" });
-            }
-        }
-
+        // POST api/Producto
         [HttpPost]
         public async Task<ActionResult<ProductoDto>> Create([FromBody] Producto producto)
         {
@@ -123,6 +90,7 @@ namespace EcommerceBackend.Controllers
             }
         }
 
+        // PUT api/Producto/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] Producto producto)
         {
@@ -146,6 +114,7 @@ namespace EcommerceBackend.Controllers
             }
         }
 
+        // DELETE api/Producto/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

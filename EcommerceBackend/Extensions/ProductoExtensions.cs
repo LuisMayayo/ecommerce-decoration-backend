@@ -15,7 +15,7 @@ namespace EcommerceBackend.Extensions
             if (producto.CategoriaId <= 0)
                 throw new ArgumentException("Debe seleccionar una categoría válida.");
         }
-
+        
         public static ProductoDto ToDto(this Producto producto)
         {
             return new ProductoDto
@@ -24,10 +24,11 @@ namespace EcommerceBackend.Extensions
                 Nombre = producto.Nombre,
                 Precio = producto.Precio,
                 CategoriaId = producto.CategoriaId,
+                CategoriaNombre = producto.Categoria?.Nombre ?? string.Empty,
+                ProveedorId = producto.ProveedorId,
+                ProveedorNombre = producto.Proveedor?.Nombre ?? string.Empty,
                 Descripcion = producto.Descripcion ?? string.Empty,
-                UrlImagen = producto.UrlImagen ?? string.Empty,
-                // Si la categoría está cargada, incluir su nombre
-                CategoriaNombre = producto.Categoria?.Nombre ?? string.Empty
+                UrlImagen = producto.UrlImagen ?? string.Empty
             };
         }
     }
