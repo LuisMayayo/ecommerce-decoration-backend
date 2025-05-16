@@ -9,12 +9,25 @@ namespace EcommerceBackend.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        
+        [Required]
         public string Nombre { get; set; } = string.Empty;
+        
+        [Required]
         public decimal Precio { get; set; }
+        
+        [Required]
         public int CategoriaId { get; set; }
+        
+        public int? ProveedorId { get; set; }
+        
         public string? UrlImagen { get; set; }
+        
         public string? Descripcion { get; set; }
-
+        
+        // Propiedades de navegación
         public Categoria? Categoria { get; set; }
+        
+        public Proveedor? Proveedor { get; set; }
     }
 }

@@ -1,5 +1,3 @@
-using System;
-
 namespace EcommerceBackend.DTOs
 {
     public class ProductoDto
@@ -9,6 +7,9 @@ namespace EcommerceBackend.DTOs
         public decimal Precio { get; set; }
         public int CategoriaId { get; set; }
         public string CategoriaNombre { get; set; } = string.Empty;
+        public int? ProveedorId { get; set; }
+        public string ProveedorNombre { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public string UrlImagen { get; set; } = string.Empty;
-    }}
+    }
+}
