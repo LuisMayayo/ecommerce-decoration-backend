@@ -74,6 +74,7 @@ CREATE TABLE Producto (
     ProveedorId INT NULL,
     UrlImagen NVARCHAR(255),
     Descripcion NVARCHAR(500),
+    ModeloUrl3D NVARCHAR(255),
     CONSTRAINT FK_Producto_Categoria
         FOREIGN KEY (CategoriaId) REFERENCES Categoria(Id),
     CONSTRAINT FK_Producto_Proveedor
@@ -132,28 +133,27 @@ VALUES
 -------------------------------------------------------------------------------
 -- 10) INSERTAR PRODUCTOS para la categoría 'Accesorio decorativo' (Id=3)
 -------------------------------------------------------------------------------
-INSERT INTO Producto (Nombre, Precio, CategoriaId, ProveedorId, UrlImagen, Descripcion)
+INSERT INTO Producto (Nombre, Precio, CategoriaId, ProveedorId, UrlImagen, Descripcion, ModeloUrl3D)
 VALUES
-    ('FIGURA ABSTRACTA POLIRESINA 27,50 X 14,50 X 29 CM', 49.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613483.jpg', 'Figura abstracta en poliresina.'),
-    ('FIGURA CÍRCULO BLANCO-ORO RESINA 45 X 10 X 57 CM', 79.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610484.jpg', 'Figura de círculo blanco y oro en resina.'),
-    ('ESCULTURA ANILLO NATURAL-BLANCO 25,50 X 9,50 X 37 CM', 89.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609776.jpg', 'Escultura de anillo natural con detalles en blanco.'),
-    ('FIGURA NATURAL-NEGRO MADERA-HIERRO 17 X 17 X 31 CM', 59.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/606256.jpg', 'Figura natural en madera y hierro.'),
-    ('FIGURA ABSTRACTA NATURAL MADERA DE MANGO 15 X 9 X 68,50 CM', 129.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609768.jpg', 'Figura abstracta en madera de mango.'),
-    ('ESCULTURA NATURAL MADERA DE MANGO 38 X 8 X 52 CM', 149.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609762.jpg', 'Escultura de madera de mango.'),
-    ('FIGURA AFRICANO NATURAL MADERA DE MANGO 14 X 14 X 88,50 CM', 199.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609765.jpg', 'Figura africana en madera de mango natural.'),
-    ('CAJA DORADO METAL 31 X 21,50 X 35,50 CM', 69.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613122.jpg', 'Caja decorativa dorada de metal.'),
-    ('FIGURA MUJER COBRE RESINA 18 X 16 X 63 CM', 79.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610476.jpg', 'Figura de mujer en resina color cobre.'),
-    ('ESCULTURA PERSONAS COBRE RESINA 40 X 10,50 X 34 CM', 99.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610487.jpg', 'Escultura de personas en resina color cobre.'),
-    ('FIGURA PAVO REAL ORO METAL 50 X 30 X 85 CM', 129.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610280.jpg', 'Figura de pavo real en metal dorado.'),
-    ('FIGURA FLAMENCO ORO METAL 25 X 21 X 85 CM', 109.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610281.jpg', 'Figura de flamenco en metal dorado.'),
-    ('FIGURA ÁRBOL ORO METAL 26 X 26 X 83 CM', 119.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613945.jpg', 'Figura de árbol en metal dorado.'),
-    ('CORONA BLANCO MADERA PAULONIA 52 X 15 X 52 CM', 89.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610781.jpg', 'Corona decorativa en madera paulownia blanca.'),
-    ('FIGURA ÁNGEL NATURAL MADERA DE MANGO 22,50 X 9 X 84,50 CM', 159.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609758.jpg', 'Figura de ángel en madera de mango natural.'),
-    ('FIGURA GALLINA BLANCO ROZADO METAL 34 X 12 X 38 CM', 49.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613871.jpg', 'Figura de gallina en metal blanco rozado.'),
-    ('FIGURA PEZ POLIRESINA 25,70 X 14 X 35,70 CM', 69.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613467.jpg', 'Figura de pez en poliresina.'),
-    ('FIGURA PEZ MADERA-FIBRA NATURAL 70 X 12 X 53 CM', 89.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609795.jpg', 'Figura de pez en madera-fibra natural.'),
-    ('FIGURA PECES MADERA-HIERRO 56 X 7 X 31 CM', 99.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609802.jpg', 'Figura de peces en madera-hierro.');
-
+    ('FIGURA ABSTRACTA POLIRESINA 27,50 X 14,50 X 29 CM', 49.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613483.jpg', 'Figura abstracta en poliresina.', 'https://models3d.com/figura-abstracta-poliresina'),
+    ('FIGURA CÍRCULO BLANCO-ORO RESINA 45 X 10 X 57 CM', 79.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610484.jpg', 'Figura de círculo blanco y oro en resina.', 'https://models3d.com/figura-circulo-blanco-oro'),
+    ('ESCULTURA ANILLO NATURAL-BLANCO 25,50 X 9,50 X 37 CM', 89.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609776.jpg', 'Escultura de anillo natural con detalles en blanco.', 'https://models3d.com/escultura-anillo-natural'),
+    ('FIGURA NATURAL-NEGRO MADERA-HIERRO 17 X 17 X 31 CM', 59.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/606256.jpg', 'Figura natural en madera y hierro.', 'https://models3d.com/figura-natural-negro'),
+    ('FIGURA ABSTRACTA NATURAL MADERA DE MANGO 15 X 9 X 68,50 CM', 129.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609768.jpg', 'Figura abstracta en madera de mango.', 'https://models3d.com/figura-abstracta-mango'),
+    ('ESCULTURA NATURAL MADERA DE MANGO 38 X 8 X 52 CM', 149.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609762.jpg', 'Escultura de madera de mango.', 'https://models3d.com/escultura-mango'),
+    ('FIGURA AFRICANO NATURAL MADERA DE MANGO 14 X 14 X 88,50 CM', 199.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609765.jpg', 'Figura africana en madera de mango natural.', 'https://models3d.com/figura-africano'),
+    ('CAJA DORADO METAL 31 X 21,50 X 35,50 CM', 69.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613122.jpg', 'Caja decorativa dorada de metal.', 'https://models3d.com/caja-dorado-metal'),
+    ('FIGURA MUJER COBRE RESINA 18 X 16 X 63 CM', 79.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610476.jpg', 'Figura de mujer en resina color cobre.', 'https://models3d.com/figura-mujer-cobre'),
+    ('ESCULTURA PERSONAS COBRE RESINA 40 X 10,50 X 34 CM', 99.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610487.jpg', 'Escultura de personas en resina color cobre.', 'https://models3d.com/escultura-personas-cobre'),
+    ('FIGURA PAVO REAL ORO METAL 50 X 30 X 85 CM', 129.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610280.jpg', 'Figura de pavo real en metal dorado.', 'https://models3d.com/figura-pavo-real'),
+    ('FIGURA FLAMENCO ORO METAL 25 X 21 X 85 CM', 109.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610281.jpg', 'Figura de flamenco en metal dorado.', 'https://models3d.com/figura-flamenco'),
+    ('FIGURA ÁRBOL ORO METAL 26 X 26 X 83 CM', 119.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613945.jpg', 'Figura de árbol en metal dorado.', 'https://models3d.com/figura-arbol-oro'),
+    ('CORONA BLANCO MADERA PAULONIA 52 X 15 X 52 CM', 89.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/610781.jpg', 'Corona decorativa en madera paulownia blanca.', 'https://models3d.com/corona-blanco-madera'),
+    ('FIGURA ÁNGEL NATURAL MADERA DE MANGO 22,50 X 9 X 84,50 CM', 159.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609758.jpg', 'Figura de ángel en madera de mango natural.', 'https://models3d.com/figura-angel-natural'),
+    ('FIGURA GALLINA BLANCO ROZADO METAL 34 X 12 X 38 CM', 49.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613871.jpg', 'Figura de gallina en metal blanco rozado.', 'https://models3d.com/figura-gallina'),
+    ('FIGURA PEZ POLIRESINA 25,70 X 14 X 35,70 CM', 69.99, 3, 3, 'https://ixia.es/media/catalog/product/6/1/613467.jpg', 'Figura de pez en poliresina.', 'https://models3d.com/figura-pez-poliresina'),
+    ('FIGURA PEZ MADERA-FIBRA NATURAL 70 X 12 X 53 CM', 89.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609795.jpg', 'Figura de pez en madera-fibra natural.', 'https://models3d.com/figura-pez-madera'),
+    ('FIGURA PECES MADERA-HIERRO 56 X 7 X 31 CM', 99.99, 3, 3, 'https://ixia.es/media/catalog/product/6/0/609802.jpg', 'Figura de peces en madera-hierro.', 'https://models3d.com/figura-peces-madera');
 
 -------------------------------------------------------------------------------
 -- 11) TABLA PEDIDO (relación con USUARIO)
