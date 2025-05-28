@@ -28,7 +28,8 @@ namespace EcommerceBackend.Extensions
                 ProveedorId = producto.ProveedorId,
                 ProveedorNombre = producto.Proveedor?.Nombre ?? string.Empty,
                 Descripcion = producto.Descripcion ?? string.Empty,
-                UrlImagen = producto.UrlImagen ?? string.Empty
+                UrlImagen = producto.UrlImagen ?? string.Empty,
+                ModeloUrl3D = producto.ModeloUrl3D ?? string.Empty
             };
         }
     }

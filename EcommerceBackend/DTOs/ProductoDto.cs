@@ -11,5 +11,6 @@ namespace EcommerceBackend.DTOs
         public string ProveedorNombre { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
         public string UrlImagen { get; set; } = string.Empty;
+        public string ModeloUrl3D { get; set; } = string.Empty;
     }
 }
