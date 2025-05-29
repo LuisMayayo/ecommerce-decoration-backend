@@ -8,7 +8,6 @@ using EcommerceBackend.Services;
 using System.IdentityModel.Tokens.Jwt;
 using Google.Apis.Auth;
 
-
 namespace EcommerceBackend.Controllers
 {
     [Route("api/[controller]")]
@@ -46,7 +45,9 @@ namespace EcommerceBackend.Controllers
                 Nombre = request.Nombre,
                 Email = request.Email,
                 FechaRegistro = DateTime.UtcNow,
-                EsAdmin = request.EsAdmin // Nuevo campo en RegisterRequest
+                EsAdmin = request.EsAdmin,
+                Telefono = request.Telefono ?? string.Empty,
+                Direccion = request.Direccion ?? string.Empty
             };
 
             using (var hmac = new HMACSHA512())
@@ -63,7 +64,9 @@ namespace EcommerceBackend.Controllers
                 Nombre = usuario.Nombre,
                 Email = usuario.Email,
                 FechaRegistro = usuario.FechaRegistro,
-                EsAdmin = usuario.EsAdmin
+                EsAdmin = usuario.EsAdmin,
+                Telefono = usuario.Telefono,
+                Direccion = usuario.Direccion
             };
 
             return CreatedAtAction(nameof(UsuarioController.GetById), "Usuario", new { id = usuario.Id }, usuarioDto);
@@ -111,8 +114,6 @@ namespace EcommerceBackend.Controllers
             return Ok("Se envió un enlace para restablecer la contraseña (si el correo existe).");
         }
 
-
-
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
@@ -149,8 +150,6 @@ namespace EcommerceBackend.Controllers
 
             return Ok("Contraseña restablecida exitosamente.");
         }
-
-
 
         [HttpPost("google-login")]
         public async Task<ActionResult<object>> GoogleLogin([FromBody] GoogleLoginRequest request)
@@ -197,9 +196,10 @@ namespace EcommerceBackend.Controllers
         public string Nombre { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public bool EsAdmin { get; set; } = false; // Nuevo campo
+        public bool EsAdmin { get; set; } = false;
+        public string? Telefono { get; set; } = string.Empty;
+        public string? Direccion { get; set; } = string.Empty;
     }
-
 
     public class LoginRequest
     {
