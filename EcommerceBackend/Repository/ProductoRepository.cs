@@ -21,6 +21,7 @@ namespace EcommerceBackend.Repositories
             return await _context.Productos
                 .Include(p => p.Categoria)
                 .Include(p => p.Proveedor)
+                .AsNoTracking() 
                 .ToListAsync();
         }
         
@@ -29,6 +30,7 @@ namespace EcommerceBackend.Repositories
             return await _context.Productos
                 .Include(p => p.Categoria)
                 .Include(p => p.Proveedor)
+                .AsNoTracking() 
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
         
@@ -40,7 +42,18 @@ namespace EcommerceBackend.Repositories
         
         public async Task UpdateAsync(Producto producto)
         {
-            _context.Productos.Update(producto);
+            _context.ChangeTracker.Clear();
+            
+            var exists = await _context.Productos
+                .AsNoTracking()
+                .AnyAsync(p => p.Id == producto.Id);
+                
+            if (!exists)
+            {
+                throw new KeyNotFoundException($"Producto con ID {producto.Id} no encontrado");
+            }
+            
+            _context.Entry(producto).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
         
@@ -59,6 +72,7 @@ namespace EcommerceBackend.Repositories
             return await _context.Productos
                 .Include(p => p.Categoria)
                 .Include(p => p.Proveedor)
+                .AsNoTracking()
                 .Where(p => p.CategoriaId == categoriaId)
                 .ToListAsync();
         }
