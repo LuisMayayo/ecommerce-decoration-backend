@@ -1,0 +1,75 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_IMAGE: marcoslarraga04/lm-decoracion-back
+  DEPLOYMENT_NAME: decoracion-api-deploy
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Generate version tag
+      id: version
+      run: |
+        echo "VERSION=$(date +%Y%m%d-%H%M%S)-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./EcommerceBackend
+        file: ./EcommerceBackend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }}
+          ${{ env.DOCKER_IMAGE }}:latest
+        platforms: linux/amd64
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: Setup kubeconfig
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+
+    - name: Deploy to EKS
+      run: |
+        kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} \
+          decoracion-api=${{ env.DOCKER_IMAGE }}:${{ steps.version.outputs.VERSION }} \
+          --record
+        
+        kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} --timeout=300s
+
+    - name: Verify deployment
+      run: |
+        kubectl get deployment ${{ env.DEPLOYMENT_NAME }}
+        kubectl get pods -l app=decoracion-api
