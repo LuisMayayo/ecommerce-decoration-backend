@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: decoracion-api-svc
+  labels:
+    app: decoracion-api
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: decoracion-api
+    tier: backend
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: decoracion-api-deploy
+  labels:
+    app: decoracion-api
+spec:
+  selector:
+    matchLabels:
+      app: decoracion-api
+      tier: backend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: decoracion-api
+        tier: backend
+    spec:
+      containers:
+      - name: decoracion-api
+        image: marcoslarraga04/lm-decoracion-back:v2.4
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ASPNETCORE_URLS
+          value: "http://+:8080"
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Development"
