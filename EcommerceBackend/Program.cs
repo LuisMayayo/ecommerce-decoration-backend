@@ -13,23 +13,44 @@ using EcommerceBackend.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1) Configurar CORS
+// 1) Configurar logging mejorado
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Configurar nivel de logging específico para EmailService
+builder.Logging.AddFilter("EcommerceBackend.Services.EmailService", LogLevel.Debug);
+
+// 2) Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Ajusta la URL del frontend si es necesario
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+            "http://localhost:5173",
+            "https://lm-decoraciones.retocsv.es"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
-// 2) Configurar cadena de conexión y DbContext
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<EcommerceDbContext>(options =>
-    options.UseSqlServer(connectionString));
+// 3) Configurar cadena de conexión y DbContext
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? throw new ArgumentNullException("DefaultConnection", "Connection string is missing");
 
-// 3) Configurar autenticación JWT
+builder.Services.AddDbContext<EcommerceDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
+
+// 4) Configurar autenticación JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new ArgumentNullException("Jwt:Key is missing"));
 
@@ -53,7 +74,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                logger.LogWarning("Authentication failed: {Message}", context.Exception.Message);
                 return Task.CompletedTask;
             },
             OnChallenge = context =>
@@ -86,7 +108,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// 4) Registrar controladores y configurar Swagger
+// 5) Registrar controladores y configurar Swagger
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -130,7 +152,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// 5) Registrar repositorios y servicios
+// 6) Registrar repositorios y servicios
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
@@ -149,27 +171,91 @@ builder.Services.AddScoped<IProveedorService, ProveedorService>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
-// 6) Registrar EmailSettings y EmailService
+// 7) Registrar EmailSettings y EmailService
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// 7) Registrar JwtService
+// 8) Registrar JwtService
 builder.Services.AddSingleton<JwtService>();
 
-// 8) Construir la aplicación
+// 9) Configurar opciones HTTP
+builder.Services.Configure<RouteOptions>(options =>
+{
+    options.LowercaseUrls = true;
+});
+
+// 10) Construir la aplicación
 var app = builder.Build();
 
-// 🔄 Configurar Swagger para producción
-app.UseSwagger();
-app.UseSwaggerUI(c =>
+// Configurar middleware de logging para debugging
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce API v1");
-    c.RoutePrefix = string.Empty; // Swagger en la raíz: http://localhost:5004
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce API v1");
+        c.RoutePrefix = string.Empty;
+    });
+}
+else
+{
+    // Para producción, mantener Swagger disponible pero con configuración segura
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Ecommerce API v1");
+        c.RoutePrefix = "api-docs"; // Cambiar la ruta en producción
+    });
+}
+
+// Middleware para logging de requests (solo en desarrollo)
+if (app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Request: {Method} {Path}", context.Request.Method, context.Request.Path);
+        await next();
+        logger.LogInformation("Response: {StatusCode}", context.Response.StatusCode);
+    });
+}
 
 app.UseCors("AllowLocalhost");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Middleware global de manejo de errores
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        var contextFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        
+        if (contextFeature != null)
+        {
+            logger.LogError(contextFeature.Error, "Error no manejado: {Message}", contextFeature.Error.Message);
+            
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/json";
+            
+            var response = new
+            {
+                error = app.Environment.IsDevelopment() 
+                    ? contextFeature.Error.Message 
+                    : "Error interno del servidor"
+            };
+            
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+    });
+});
+
 app.MapControllers();
+
+// Log de inicio
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("Aplicación iniciada en entorno: {Environment}", app.Environment.EnvironmentName);
+
 app.Run();
